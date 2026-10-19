@@ -129,6 +129,8 @@ function MainApp() {
         centerLng: 106.827153,
         defaultZoom: 15,
         status: 'active',
+        allowedOfficerIds: [],
+        createdBy: user.uid,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -146,6 +148,7 @@ function MainApp() {
           lng: 106.8285,
           heading: 45,
           crewNames: 'dr. Satria, Ns. Maya',
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
         {
@@ -159,6 +162,7 @@ function MainApp() {
           lng: 106.8250,
           heading: 180,
           crewNames: 'Ns. Hendra',
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
       ]);
@@ -535,40 +539,50 @@ function MainApp() {
         {activeView === 'map' && (
           <>
             {currentMap ? (
-              <div className="w-full h-full relative">
-                <TacticalMapComponent
-                  currentMap={currentMap}
-                  units={units}
-                  riskZones={riskZones}
-                  selectedUnit={selectedUnit}
-                  onSelectUnit={(u) => setSelectedUnit(u)}
-                  onSelectZone={(z) => setSelectedZone(z)}
-                  officerLocations={officerLocations}
-                  isPlottingMode={isPlottingMode}
-                  onTogglePlottingMode={() => {
-                    if (!isAdmin) return;
-                    if (!isPlottingMode) {
-                      setDraftCoords({ lat: currentMap.centerLat, lng: currentMap.centerLng });
-                    }
-                    setIsPlottingMode(!isPlottingMode);
-                  }}
-                  draftUnitCoords={draftCoords}
-                  onUpdateDraftCoords={(c) => {
-                    if (!isAdmin) return;
-                    setDraftCoords(c);
-                  }}
-                  onConfirmPlotUnit={(coords) => {
-                    if (!isAdmin) return;
-                    setDraftCoords(coords);
-                    setIsPlottingMode(false);
-                    setIsUnitModalOpen(true);
-                  }}
-                  isDrawingMode={isDrawingMode}
-                  onToggleDrawingMode={() => {
-                    if (!isAdmin) return;
-                    setIsDrawingMode(!isDrawingMode);
-                  }}
-                  onSaveDrawnZone={handleSaveDrawnZone}
+              <div className="w-full h-full relative overflow-hidden">
+                {/* Main Tactical Map Area (Full 100vw on mobile, side-by-side with sidebar on desktop) */}
+                <div
+                  className={`w-full h-full relative transition-all duration-300 ${
+                    isUnitPanelOpen
+                      ? 'md:ml-80 lg:md:ml-92'
+                      : isZonePanelOpen
+                      ? 'md:ml-80 lg:md:ml-88'
+                      : 'md:ml-0'
+                  }`}
+                >
+                  <TacticalMapComponent
+                    currentMap={currentMap}
+                    units={units}
+                    riskZones={riskZones}
+                    selectedUnit={selectedUnit}
+                    onSelectUnit={(u) => setSelectedUnit(u)}
+                    onSelectZone={(z) => setSelectedZone(z)}
+                    officerLocations={officerLocations}
+                    isPlottingMode={isPlottingMode}
+                    onTogglePlottingMode={() => {
+                      if (!isAdmin) return;
+                      if (!isPlottingMode) {
+                        setDraftCoords({ lat: currentMap.centerLat, lng: currentMap.centerLng });
+                      }
+                      setIsPlottingMode(!isPlottingMode);
+                    }}
+                    draftUnitCoords={draftCoords}
+                    onUpdateDraftCoords={(c) => {
+                      if (!isAdmin) return;
+                      setDraftCoords(c);
+                    }}
+                    onConfirmPlotUnit={(coords) => {
+                      if (!isAdmin) return;
+                      setDraftCoords(coords);
+                      setIsPlottingMode(false);
+                      setIsUnitModalOpen(true);
+                    }}
+                    isDrawingMode={isDrawingMode}
+                    onToggleDrawingMode={() => {
+                      if (!isAdmin) return;
+                      setIsDrawingMode(!isDrawingMode);
+                    }}
+                    onSaveDrawnZone={handleSaveDrawnZone}
                     onCancelDrawing={() => setIsDrawingMode(false)}
                     isAdmin={isAdmin}
                     isUnitPanelOpen={isUnitPanelOpen}
@@ -611,6 +625,7 @@ function MainApp() {
                       </div>
                     </div>
                   )}
+                </div>
 
                 {/* Units List Sidebar Panel */}
                 <UnitListPanel

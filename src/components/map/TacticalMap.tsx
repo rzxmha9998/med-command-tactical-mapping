@@ -826,15 +826,7 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
       isPlottingMode || isDrawingMode ? 'tactical-crosshair-active' : ''
     }`}>
       {/* Top Left: Floating Location Search */}
-      <div
-        className={`absolute top-3 sm:top-4 z-[500] transition-all duration-300 ${
-          isUnitPanelOpen
-            ? 'left-3 sm:left-4 md:left-[384px]'
-            : isZonePanelOpen
-            ? 'left-3 sm:left-4 md:left-[368px]'
-            : 'left-3 sm:left-4'
-        }`}
-      >
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-[500]">
         <LocationSearch
           onSelectLocation={(lat, lng, zoom = 16) => {
             mapInstanceRef.current?.flyTo([lat, lng], zoom);
@@ -844,15 +836,7 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
 
       {/* Admin Action Toolbar (Plot Unit & Gambar Zona) - Separated from search */}
       {isAdmin && (
-        <div
-          className={`absolute top-15 sm:top-16 z-[480] flex items-center gap-2 transition-all duration-300 ${
-            isUnitPanelOpen
-              ? 'left-3 sm:left-4 md:left-[384px]'
-              : isZonePanelOpen
-              ? 'left-3 sm:left-4 md:left-[368px]'
-              : 'left-3 sm:left-4'
-          }`}
-        >
+        <div className="absolute top-15 left-3 sm:top-16 sm:left-4 z-[480] flex items-center gap-2">
           <button
             type="button"
             onClick={onTogglePlottingMode}
