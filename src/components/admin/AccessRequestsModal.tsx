@@ -148,32 +148,32 @@ export const AccessRequestsModal: React.FC<AccessRequestsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-4xl bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2.5 sm:p-4 overflow-y-auto">
+      <div className="w-full max-w-4xl bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[94vh]">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#0B2342] border border-[#2A9D8F]/60 flex items-center justify-center text-[#2A9D8F] shadow-[0_0_15px_rgba(42,157,143,0.3)]">
-              <Shield className="w-5 h-5" />
+        <div className="px-4 sm:px-6 py-3.5 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0B2342] border border-[#2A9D8F]/60 flex items-center justify-center text-[#2A9D8F] shadow-[0_0_15px_rgba(42,157,143,0.3)] shrink-0">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-white text-base">Permintaan Akses Peta Petugas</h3>
+                <h3 className="font-bold text-white text-sm sm:text-base">Permintaan Akses Peta Petugas</h3>
                 {pendingRequests.length > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/50 text-rose-300 font-mono text-[10px] font-bold">
                     {pendingRequests.length} Menunggu
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-400">
-                Tinjau, validasi sektor penugasan, dan berikan otorisasi akses peta operasional kepada petugas medis
+              <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-1">
+                Tinjau, validasi sektor penugasan, dan berikan otorisasi akses peta operasional
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>

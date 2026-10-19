@@ -47,21 +47,39 @@ export const UnitDetailDrawer: React.FC<UnitDetailDrawerProps> = ({
   };
 
   return (
-    <div className="fixed top-14 bottom-0 right-0 z-[450] w-80 sm:w-96 bg-[#071629]/95 backdrop-blur-md border-l border-[#1E3A5F] flex flex-col shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300">
-      {/* Header */}
-      <div className="p-4 bg-[#0B2342] border-b border-[#1E3A5F] flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#071629] text-[#2A9D8F] border border-[#1E3A5F]">
-            {unit.unitCode}
-          </span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusConfig.badgeClass}`}>
-            {statusConfig.label}
-          </span>
+    <>
+      {/* Mobile Backdrop */}
+      <div
+        onClick={onClose}
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[550] sm:hidden animate-in fade-in duration-200"
+      />
+
+      <div className="fixed inset-x-0 bottom-0 z-[560] max-h-[85vh] w-full rounded-t-2xl sm:rounded-none sm:inset-auto sm:top-14 sm:bottom-0 sm:right-0 sm:w-96 bg-[#071629]/98 backdrop-blur-md border-t sm:border-t-0 sm:border-l border-[#1E3A5F] flex flex-col shadow-2xl overflow-y-auto pb-safe animate-in slide-in-from-bottom sm:slide-in-from-right duration-300">
+        {/* Mobile Pull Handle */}
+        <div
+          onClick={onClose}
+          className="w-12 h-1.5 rounded-full bg-slate-600/70 hover:bg-slate-500 mx-auto mt-2.5 mb-1 sm:hidden cursor-pointer shrink-0"
+          title="Tarik atau ketuk untuk menutup"
+        />
+
+        {/* Header */}
+        <div className="p-3.5 sm:p-4 bg-[#0B2342] border-b border-[#1E3A5F] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#071629] text-[#2A9D8F] border border-[#1E3A5F]">
+              {unit.unitCode}
+            </span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusConfig.badgeClass}`}>
+              {statusConfig.label}
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            title="Tutup Rincian Unit"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
 
       {/* Hero Image or Built-in Tactical Vehicle Icon Banner */}
       <div className="relative w-full h-48 bg-[#071629] border-b border-[#1E3A5F] overflow-hidden flex items-center justify-center">
@@ -213,5 +231,6 @@ export const UnitDetailDrawer: React.FC<UnitDetailDrawerProps> = ({
         </div>
       )}
     </div>
+  </>
   );
 };

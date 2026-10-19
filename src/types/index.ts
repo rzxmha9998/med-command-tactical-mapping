@@ -62,7 +62,8 @@ export interface RiskZone {
   zoneType: ZoneType;
   geometryType: GeometryType;
   coordinates: string; // JSON serialized string of LatLngPoint[] or center LatLngPoint
-  radius?: number; // In meters, for circle
+  radius?: number; // In meters, for circle/donut outer radius
+  innerRadius?: number; // In meters, for donut inner radius (transparent center hole)
   riskLevel: string; // e.g. 'Tinggi - Evakuasi Segera', 'Sedang - Siaga', 'Aman - Pos Aju'
   description?: string;
   notes?: string;

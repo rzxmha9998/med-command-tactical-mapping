@@ -106,7 +106,7 @@ export const LocationSearch: React.FC<LocationSearchProps> = ({ onSelectLocation
   };
 
   return (
-    <div ref={containerRef} className="relative w-72 sm:w-84 z-[500]">
+    <div ref={containerRef} className="relative w-[calc(100vw-76px)] sm:w-80 md:w-84 max-w-[340px] z-[500]">
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex items-center bg-[#071629]/95 backdrop-blur-md border border-[#1E3A5F] rounded-lg px-3 py-2 text-sm shadow-xl focus-within:border-[#2A9D8F] focus-within:ring-1 focus-within:ring-[#2A9D8F] transition-all">
           <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />

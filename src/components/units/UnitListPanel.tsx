@@ -13,6 +13,7 @@ import {
   Trash2,
   Edit,
   Radio,
+  X,
 } from 'lucide-react';
 import { MedicalUnit, UnitType, UnitStatus } from '../../types';
 import { UNIT_TYPES, UNIT_STATUSES } from '../../constants/presets';
@@ -83,20 +84,42 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
     }
   };
 
+  const handleSelectUnit = (u: MedicalUnit) => {
+    onSelectUnit(u);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      onToggleOpen();
+    }
+  };
+
   return (
     <>
-      {/* Sidebar Container */}
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div
+          onClick={onToggleOpen}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[430] md:hidden animate-in fade-in duration-200"
+        />
+      )}
+
+      {/* Responsive Panel: Bottom Sheet on Mobile, Left Sidebar on Desktop */}
       <div
-        className={`fixed top-14 bottom-0 left-0 z-[400] w-80 md:w-92 bg-[#071629]/95 backdrop-blur-md border-r border-[#1E3A5F] flex flex-col transition-transform duration-300 shadow-2xl ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-x-0 bottom-0 z-[440] max-h-[75vh] w-full rounded-t-2xl bg-[#071629]/98 backdrop-blur-lg border-t border-[#1E3A5F] flex flex-col transition-transform duration-300 ease-out shadow-2xl pb-safe md:inset-auto md:top-14 md:bottom-0 md:left-0 md:w-80 md:w-92 md:rounded-none md:border-r md:border-t-0 md:max-h-none ${
+          isOpen ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:-translate-x-full md:translate-y-0'
         }`}
       >
+        {/* Mobile Pull Handle Indicator */}
+        <div
+          onClick={onToggleOpen}
+          className="w-12 h-1.5 rounded-full bg-slate-600/70 hover:bg-slate-500 mx-auto mt-2.5 mb-1 md:hidden cursor-pointer shrink-0"
+          title="Tarik atau ketuk untuk menutup"
+        />
+
         {/* Header */}
-        <div className="p-4 border-b border-[#1E3A5F]">
+        <div className="p-3.5 sm:p-4 border-b border-[#1E3A5F] shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-[#2A9D8F] animate-pulse" />
-              <h2 className="font-bold text-white text-sm uppercase tracking-wider">
+              <h2 className="font-bold text-white text-xs sm:text-sm uppercase tracking-wider">
                 Unit Medis Terplot
               </h2>
               <span className="px-2 py-0.5 rounded-full bg-[#1E3A5F] text-[#2A9D8F] font-mono text-xs font-bold">
@@ -104,15 +127,27 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
               </span>
             </div>
 
-            {isAdmin && onAddNewUnit && (
+            <div className="flex items-center gap-1.5">
+              {isAdmin && onAddNewUnit && (
+                <button
+                  onClick={onAddNewUnit}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Plot Unit</span>
+                </button>
+              )}
+
+              {/* Mobile Close Button */}
               <button
-                onClick={onAddNewUnit}
-                className="px-2.5 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md cursor-pointer"
+                type="button"
+                onClick={onToggleOpen}
+                className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                title="Tutup Panel Unit"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Plot Unit</span>
+                <X className="w-4 h-4" />
               </button>
-            )}
+            </div>
           </div>
 
           {/* Search Box */}
@@ -174,7 +209,7 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
               return (
                 <div
                   key={unit.id}
-                  onClick={() => onSelectUnit(unit)}
+                  onClick={() => handleSelectUnit(unit)}
                   className={`p-2.5 rounded-xl border transition-all cursor-pointer relative overflow-hidden group ${
                     isSelected
                       ? 'bg-[#14365f] border-[#2A9D8F] shadow-[0_0_15px_rgba(42,157,143,0.3)]'
@@ -231,7 +266,7 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectUnit(unit);
+                          handleSelectUnit(unit);
                         }}
                         className="px-2 py-0.5 rounded bg-[#1E3A5F] hover:bg-[#2A9D8F] hover:text-[#071629] text-slate-300 font-semibold transition-colors flex items-center gap-1"
                       >
@@ -275,11 +310,11 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
         </div>
       </div>
 
-      {/* Floating Toggle Tab Button */}
+      {/* Floating Toggle Tab Button (Desktop Only) */}
       <button
         onClick={onToggleOpen}
         title={isOpen ? 'Tutup Panel Unit' : 'Buka Panel Unit'}
-        className={`fixed top-20 z-[410] bg-[#071629] border border-[#1E3A5F] rounded-r-lg p-2 text-slate-300 hover:text-white shadow-xl transition-all duration-300 flex items-center gap-1 ${
+        className={`hidden md:flex fixed top-20 z-[410] bg-[#071629] border border-[#1E3A5F] rounded-r-lg p-2 text-slate-300 hover:text-white shadow-xl transition-all duration-300 items-center gap-1 ${
           isOpen ? 'left-80 md:left-92' : 'left-0'
         }`}
       >

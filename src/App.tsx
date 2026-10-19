@@ -47,7 +47,7 @@ import {
 import { subscribeAllOfficers } from './firebase/services/userService';
 import { subscribeAllAccessRequests } from './firebase/services/accessRequestService';
 import { subscribeOfficerLocations } from './firebase/services/officerLocationService';
-import { Loader2, Shield, AlertCircle, Plus, MapPin } from 'lucide-react';
+import { Loader2, Shield, AlertCircle, Plus, MapPin, Radio, Layers, ShieldAlert } from 'lucide-react';
 
 function MainApp() {
   const { user, profile, role, isAdmin, loading: authLoading, authStatus } = useAuth();
@@ -516,35 +516,110 @@ function MainApp() {
 
                 {/* Plotting Floating Save Banner (when admin is dragging draft marker) */}
                 {isAdmin && isPlottingMode && draftCoords && (
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[550] bg-[#071629]/95 backdrop-blur-md border border-[#2A9D8F] rounded-2xl shadow-2xl p-4 flex items-center gap-4 animate-in slide-in-from-bottom duration-300">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#2A9D8F]/20 text-[#2A9D8F] flex items-center justify-center font-bold">
+                  <div className="absolute bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-[550] bg-[#071629]/98 backdrop-blur-md border border-[#2A9D8F] rounded-2xl shadow-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-center gap-2.5 sm:gap-4 w-[calc(100vw-32px)] sm:w-auto animate-in slide-in-from-bottom duration-300">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="w-9 h-9 rounded-xl bg-[#2A9D8F]/20 text-[#2A9D8F] flex items-center justify-center font-bold shrink-0">
                         <MapPin className="w-5 h-5" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="text-xs font-bold text-white">Posisi Marker Dipilih:</div>
-                        <div className="font-mono text-[11px] text-[#2A9D8F]">
+                        <div className="font-mono text-[11px] text-[#2A9D8F] truncate">
                           {draftCoords.lat.toFixed(6)}, {draftCoords.lng.toFixed(6)}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                       <button
                         onClick={() => setIsPlottingMode(false)}
-                        className="px-3 py-1.5 rounded-lg bg-[#14365f] text-slate-300 hover:text-white text-xs"
+                        className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-[#14365f] text-slate-300 hover:text-white text-xs cursor-pointer"
                       >
                         Batal
                       </button>
                       <button
                         onClick={handleFinishPlottingSave}
-                        className="px-4 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs shadow-lg"
+                        className="flex-1 sm:flex-none px-4 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs shadow-lg cursor-pointer"
                       >
                         Gunakan Koordinat Ini
                       </button>
                     </div>
                   </div>
                 )}
+
+                {/* Mobile Bottom Floating Action Dock (Quick access to Units, Zones, Plot, and Draw) */}
+                <div className="fixed bottom-3 inset-x-3 sm:hidden z-[420] bg-[#071629]/95 backdrop-blur-md border border-[#1E3A5F] rounded-2xl shadow-2xl p-1.5 flex items-center justify-between gap-1 pb-safe select-none">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsZonePanelOpen(false);
+                      setIsUnitPanelOpen(!isUnitPanelOpen);
+                    }}
+                    className={`flex-1 py-2 px-1 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+                      isUnitPanelOpen
+                        ? 'bg-[#14365f] text-[#2A9D8F] border border-[#2A9D8F]/60 shadow-md'
+                        : 'text-slate-300 hover:bg-[#0B2342]'
+                    }`}
+                  >
+                    <Radio className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Unit ({units.length})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsUnitPanelOpen(false);
+                      setIsZonePanelOpen(!isZonePanelOpen);
+                    }}
+                    className={`flex-1 py-2 px-1 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
+                      isZonePanelOpen
+                        ? 'bg-[#14365f] text-amber-400 border border-amber-500/60 shadow-md'
+                        : 'text-slate-300 hover:bg-[#0B2342]'
+                    }`}
+                  >
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Zona ({riskZones.length})</span>
+                  </button>
+
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsZonePanelOpen(false);
+                        setIsUnitPanelOpen(false);
+                        handleStartPlotting();
+                      }}
+                      className={`py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
+                        isPlottingMode
+                          ? 'bg-[#2A9D8F] text-[#071629] ring-2 ring-[#2A9D8F]/50 animate-pulse'
+                          : 'bg-[#2A9D8F] hover:bg-[#238276] text-[#071629]'
+                      }`}
+                      title="Plot unit medis di peta"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-rose-800" />
+                      <span>+ Plot</span>
+                    </button>
+                  )}
+
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsZonePanelOpen(false);
+                        setIsUnitPanelOpen(false);
+                        handleStartDrawingZone();
+                      }}
+                      className={`py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
+                        isDrawingMode
+                          ? 'bg-red-600 text-white ring-2 ring-red-400 animate-pulse'
+                          : 'bg-[#14365f] border border-amber-500/50 text-amber-300'
+                      }`}
+                      title="Gambar zona risiko di peta"
+                    >
+                      <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                      <span>+ Zona</span>
+                    </button>
+                  )}
+                </div>
 
                 {/* Units List Sidebar Panel */}
                 <UnitListPanel

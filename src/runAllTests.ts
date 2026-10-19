@@ -14,9 +14,10 @@ async function runAll() {
     await import('./firebase/services/accessRequest.test');
     await import('./firebase/services/officerGps.test');
     await import('./components/common/tacticalVehicle.test');
+    await import('./utils/geoDonut.test');
 
     console.log('\n======================================================');
-    console.log('ALL 5 TEST SUITES COMPLETED SUCCESSFULLY! (131/131)');
+    console.log('ALL 6 TEST SUITES COMPLETED SUCCESSFULLY!');
     console.log('======================================================\n');
   } catch (err) {
     console.error('Test Runner encountered an error:', err);

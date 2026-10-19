@@ -31,6 +31,9 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
   const [radius, setRadius] = useState<number>(initialRadius || 300);
+  const [innerRadius, setInnerRadius] = useState<number>(
+    initialData?.innerRadius || Math.max(10, Math.round((initialRadius || 300) * 0.55))
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +44,9 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
       setRiskLevel(initialData.riskLevel || '');
       setDescription(initialData.description || '');
       setNotes(initialData.notes || '');
-      if (initialData.radius) setRadius(initialData.radius);
+      const r = initialData.radius || 300;
+      setRadius(r);
+      setInnerRadius(initialData.innerRadius || Math.max(10, Math.round(r * 0.55)));
     } else {
       const selectedType = initialZoneType || 'red';
       setName('');
@@ -55,7 +60,9 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
       }
       setDescription('');
       setNotes('');
-      setRadius(initialRadius || 300);
+      const r = initialRadius || 300;
+      setRadius(r);
+      setInnerRadius(Math.max(10, Math.round(r * 0.55)));
     }
     setError(null);
   }, [initialData, isOpen, initialRadius, initialZoneType]);
@@ -82,6 +89,7 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
     const finalGeomType = initialData?.geometryType || geometryType;
     const finalCoords = initialData?.coordinates || coordinates;
     const finalRadius = finalGeomType === 'circle' ? radius : undefined;
+    const safeInner = finalGeomType === 'circle' ? Math.min(innerRadius, (finalRadius || 300) - 10) : undefined;
 
     // Pre-validate geometry and parameters
     const validation = validateRiskZonePayload({
@@ -90,6 +98,7 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
       geometryType: finalGeomType,
       coordinates: finalCoords,
       radius: finalRadius,
+      innerRadius: safeInner,
     });
 
     if (!validation.isValid) {
@@ -111,6 +120,9 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
 
     if (finalGeomType === 'circle' && typeof finalRadius === 'number' && finalRadius > 0) {
       zonePayload.radius = finalRadius;
+      if (typeof safeInner === 'number' && safeInner > 0) {
+        zonePayload.innerRadius = safeInner;
+      }
     }
     if (description.trim()) {
       zonePayload.description = description.trim();
@@ -131,26 +143,29 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4">
+      <div className="w-full max-w-lg max-h-[90vh] flex flex-col bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <span
               className="w-3.5 h-3.5 rounded-full shadow-lg"
               style={{ backgroundColor: ZONE_CONFIG[zoneType].fillColor }}
             />
-            <h3 className="font-bold text-white text-base">
+            <h3 className="font-bold text-white text-sm sm:text-base">
               {initialData ? 'Edit Data Zona Risiko' : 'Simpan Zona Risiko ke Peta'}
             </h3>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
+        {/* Form Body - Scrollable on mobile */}
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs">
           {error && (
             <div className="p-3 rounded-lg bg-rose-950/50 border border-rose-500/50 text-rose-300">
               {error}
@@ -162,7 +177,7 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
             <label className="text-slate-300 font-semibold flex items-center justify-between">
               <span>Tingkat Risiko & Warna Zona *</span>
               <span className="text-[10px] text-slate-400 font-mono uppercase">
-                Tipe: {geometryType.toUpperCase()}
+                Tipe: {geometryType === 'circle' ? 'CINCIN / DONAT' : geometryType.toUpperCase()}
               </span>
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -235,22 +250,58 @@ export const ZoneFormModal: React.FC<ZoneFormModalProps> = ({
             />
           </div>
 
-          {/* Circle radius control if geometry is circle */}
+          {/* Donut / Ring radius controls if geometry is circle */}
           {(initialData?.geometryType || geometryType) === 'circle' && (
-            <div className="p-3 bg-[#071629] rounded-xl border border-[#1E3A5F] space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-300">Radius Lingkaran (Meter)</span>
-                <span className="font-mono text-[#2A9D8F] font-bold">{radius} m</span>
+            <div className="p-3 bg-[#071629] rounded-xl border border-[#1E3A5F] space-y-3">
+              <div className="flex items-center justify-between border-b border-[#1E3A5F]/60 pb-2">
+                <span className="font-semibold text-slate-200">Konfigurasi Donat / Cincin Risiko</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#102a4e] text-[#2A9D8F] font-mono font-bold">
+                  Lebar Cincin: {Math.max(10, radius - innerRadius)} m
+                </span>
               </div>
-              <input
-                type="range"
-                min="50"
-                max="3000"
-                step="25"
-                value={radius}
-                onChange={(e) => setRadius(parseInt(e.target.value))}
-                className="w-full accent-[#2A9D8F]"
-              />
+
+              {/* Outer Radius */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-300 font-medium">Batas Luar (Radius Luar)</span>
+                  <span className="font-mono text-[#2A9D8F] font-bold">{radius} m</span>
+                </div>
+                <input
+                  type="range"
+                  min="50"
+                  max="3000"
+                  step="25"
+                  value={radius}
+                  onChange={(e) => {
+                    const newR = parseInt(e.target.value);
+                    setRadius(newR);
+                    if (innerRadius >= newR) {
+                      setInnerRadius(Math.max(10, Math.round(newR * 0.55)));
+                    }
+                  }}
+                  className="w-full accent-[#2A9D8F]"
+                />
+              </div>
+
+              {/* Inner Radius (Hole) */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-300 font-medium">Lubang Tengah Transparan (Radius Dalam)</span>
+                    <span className="text-[9px] text-slate-500 font-normal">(Basemap terlihat)</span>
+                  </div>
+                  <span className="font-mono text-cyan-400 font-bold">{innerRadius} m</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max={Math.max(20, radius - 20)}
+                  step="10"
+                  value={innerRadius}
+                  onChange={(e) => setInnerRadius(parseInt(e.target.value))}
+                  className="w-full accent-cyan-400"
+                />
+              </div>
             </div>
           )}
 

@@ -47,23 +47,23 @@ export const MapControls: React.FC<MapControlsProps> = ({
   ];
 
   return (
-    <div className="absolute top-4 right-4 z-[500] flex flex-col items-end gap-2">
+    <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-[500] flex flex-col items-end gap-2">
       {/* Primary Toolbar Group */}
-      <div className="flex flex-col bg-[#071629]/95 backdrop-blur-md border border-[#1E3A5F] rounded-lg shadow-2xl p-1 gap-1">
+      <div className="flex flex-col bg-[#071629]/95 backdrop-blur-md border border-[#1E3A5F] rounded-xl sm:rounded-lg shadow-2xl p-1 gap-1">
         {/* Zoom Controls */}
         <button
           onClick={onZoomIn}
           title="Perbesar Peta (+)"
-          className="w-9 h-9 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-[#14365f] transition-colors"
+          className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded text-slate-300 hover:text-white hover:bg-[#14365f] transition-colors cursor-pointer"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
         <button
           onClick={onZoomOut}
           title="Perkecil Peta (-)"
-          className="w-9 h-9 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-[#14365f] transition-colors"
+          className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded text-slate-300 hover:text-white hover:bg-[#14365f] transition-colors cursor-pointer"
         >
-          <Minus className="w-4 h-4" />
+          <Minus className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
 
         <div className="h-px bg-[#1E3A5F] my-0.5 mx-1" />
@@ -72,27 +72,27 @@ export const MapControls: React.FC<MapControlsProps> = ({
         <button
           onClick={onResetView}
           title="Kembali ke Titik Awal Peta"
-          className="w-9 h-9 flex items-center justify-center rounded text-slate-300 hover:text-[#2A9D8F] hover:bg-[#14365f] transition-colors"
+          className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded text-slate-300 hover:text-[#2A9D8F] hover:bg-[#14365f] transition-colors cursor-pointer"
         >
-          <RotateCcw className="w-4 h-4" />
+          <RotateCcw className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
 
         {/* Geolocation */}
         <button
           onClick={onLocateMe}
           title="Lokasi Saya (GPS)"
-          className="w-9 h-9 flex items-center justify-center rounded text-slate-300 hover:text-[#2A9D8F] hover:bg-[#14365f] transition-colors"
+          className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded text-slate-300 hover:text-[#2A9D8F] hover:bg-[#14365f] transition-colors cursor-pointer"
         >
-          <Navigation className="w-4 h-4" />
+          <Navigation className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
 
         {/* Fullscreen */}
         <button
           onClick={onToggleFullscreen}
           title={isFullscreen ? 'Keluar Layar Penuh' : 'Mode Layar Penuh'}
-          className="w-9 h-9 flex items-center justify-center rounded text-slate-300 hover:text-white hover:bg-[#14365f] transition-colors"
+          className="w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded text-slate-300 hover:text-white hover:bg-[#14365f] transition-colors cursor-pointer"
         >
-          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          {isFullscreen ? <Minimize2 className="w-5 h-5 sm:w-4 sm:h-4" /> : <Maximize2 className="w-5 h-5 sm:w-4 sm:h-4" />}
         </button>
 
         <div className="h-px bg-[#1E3A5F] my-0.5 mx-1" />
@@ -102,18 +102,18 @@ export const MapControls: React.FC<MapControlsProps> = ({
           <button
             onClick={() => setShowLayerMenu(!showLayerMenu)}
             title="Ganti Lapisan Peta"
-            className={`w-9 h-9 flex items-center justify-center rounded transition-colors ${
+            className={`w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded transition-colors cursor-pointer ${
               showLayerMenu
                 ? 'bg-[#2A9D8F] text-[#071629]'
                 : 'text-slate-300 hover:text-white hover:bg-[#14365f]'
             }`}
           >
-            <Layers className="w-4 h-4" />
+            <Layers className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
 
           {/* Layer Flyout Menu */}
           {showLayerMenu && (
-            <div className="absolute right-full top-0 mr-2 w-64 bg-[#0B2342] border border-[#1E3A5F] rounded-lg shadow-2xl p-2 text-xs">
+            <div className="absolute right-0 sm:right-full top-full sm:top-0 mt-2 sm:mt-0 sm:mr-2 w-64 max-w-[calc(100vw-32px)] bg-[#0B2342] border border-[#1E3A5F] rounded-lg shadow-2xl p-2 text-xs z-[550]">
               <div className="text-[10px] uppercase font-bold text-slate-400 mb-1.5 px-2">
                 Pilih Lapisan Peta Dasar
               </div>
@@ -147,13 +147,13 @@ export const MapControls: React.FC<MapControlsProps> = ({
         <button
           onClick={onToggleLegend}
           title="Legenda Peta Taktis"
-          className={`w-9 h-9 flex items-center justify-center rounded transition-colors ${
+          className={`w-11 h-11 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg sm:rounded transition-colors cursor-pointer ${
             isLegendOpen
               ? 'bg-[#2A9D8F] text-[#071629]'
               : 'text-slate-300 hover:text-white hover:bg-[#14365f]'
           }`}
         >
-          <Info className="w-4 h-4" />
+          <Info className="w-5 h-5 sm:w-4 sm:h-4" />
         </button>
       </div>
     </div>

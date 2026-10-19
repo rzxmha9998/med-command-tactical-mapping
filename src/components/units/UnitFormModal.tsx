@@ -384,13 +384,13 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
   if (!isOpen || !isAdmin) return null;
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-xl bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2.5 sm:p-4 overflow-y-auto">
+      <div className="w-full max-w-xl max-h-[94vh] flex flex-col bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden my-auto">
         {/* Modal Header */}
-        <div className="px-6 py-4 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-[#2A9D8F]" />
-            <h3 className="font-bold text-white text-base">
+            <h3 className="font-bold text-white text-sm sm:text-base">
               {initialData ? 'Edit Data Unit Medis' : 'Tambah & Plot Unit Medis'}
             </h3>
           </div>
@@ -398,14 +398,14 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
             type="button"
             onClick={onClose}
             disabled={isFormDisabled}
-            className="text-slate-400 hover:text-white transition-colors disabled:opacity-40"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-40 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto text-xs">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs">
           {formError && (
             <div className="p-3 rounded-lg bg-rose-950/70 border border-rose-500/60 text-rose-200 flex items-start justify-between gap-2 shadow-md">
               <div className="flex items-start gap-2">

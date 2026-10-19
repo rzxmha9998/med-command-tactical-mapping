@@ -34,13 +34,13 @@ export const ZoneDrawingToolbar: React.FC<ZoneDrawingToolbarProps> = ({
   onUndoPoint,
 }) => {
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[500] flex flex-col items-center gap-2">
-      <div className="bg-[#071629]/95 backdrop-blur-md border border-[#2A9D8F] rounded-xl shadow-2xl p-2.5 flex items-center gap-3">
+    <div className="absolute top-16 sm:top-4 left-1/2 -translate-x-1/2 z-[500] flex flex-col items-center gap-1.5 w-[calc(100vw-24px)] max-w-2xl px-1">
+      <div className="bg-[#071629]/95 backdrop-blur-md border border-[#2A9D8F] rounded-xl shadow-2xl p-2 flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-center gap-2 w-full overflow-x-auto">
         {/* Step indicator */}
-        <div className="flex items-center gap-2 pr-3 border-r border-[#1E3A5F]">
+        <div className="flex items-center gap-2 pr-2.5 border-r border-[#1E3A5F] shrink-0">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-          <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-            MODE GAMBAR ZONA
+          <span className="text-[11px] sm:text-xs font-mono font-bold text-white uppercase tracking-wider">
+            GAMBAR ZONA
           </span>
         </div>
 
@@ -49,7 +49,7 @@ export const ZoneDrawingToolbar: React.FC<ZoneDrawingToolbarProps> = ({
           <button
             type="button"
             onClick={() => onSelectGeometry('polygon')}
-            className={`px-2.5 py-1.5 rounded flex items-center gap-1.5 text-xs font-semibold transition-all ${
+            className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded flex items-center gap-1 text-[11px] sm:text-xs font-semibold transition-all ${
               activeGeometry === 'polygon'
                 ? 'bg-[#2A9D8F] text-[#071629]'
                 : 'text-slate-300 hover:text-white hover:bg-[#14365f]'
@@ -63,21 +63,21 @@ export const ZoneDrawingToolbar: React.FC<ZoneDrawingToolbarProps> = ({
           <button
             type="button"
             onClick={() => onSelectGeometry('circle')}
-            className={`px-2.5 py-1.5 rounded flex items-center gap-1.5 text-xs font-semibold transition-all ${
+            className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded flex items-center gap-1 text-[11px] sm:text-xs font-semibold transition-all ${
               activeGeometry === 'circle'
                 ? 'bg-[#2A9D8F] text-[#071629]'
                 : 'text-slate-300 hover:text-white hover:bg-[#14365f]'
             }`}
-            title="Lingkaran / Radius"
+            title="Donat Cincin / Lubang Transparan"
           >
             <CircleIcon className="w-3.5 h-3.5" />
-            <span>Radius Lingkaran</span>
+            <span>Donat</span>
           </button>
 
           <button
             type="button"
             onClick={() => onSelectGeometry('rectangle')}
-            className={`px-2.5 py-1.5 rounded flex items-center gap-1.5 text-xs font-semibold transition-all ${
+            className={`px-2 py-1 sm:px-2.5 sm:py-1.5 rounded flex items-center gap-1 text-[11px] sm:text-xs font-semibold transition-all ${
               activeGeometry === 'rectangle'
                 ? 'bg-[#2A9D8F] text-[#071629]'
                 : 'text-slate-300 hover:text-white hover:bg-[#14365f]'

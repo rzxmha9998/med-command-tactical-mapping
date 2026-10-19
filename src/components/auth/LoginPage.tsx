@@ -134,7 +134,7 @@ export const LoginPage: React.FC = () => {
         <div className="h-1 w-full bg-gradient-to-r from-[#14365f] via-[#2A9D8F] to-[#14365f]" />
 
         {/* Header Section */}
-        <div className="p-6 sm:p-7 text-center border-b border-[#1E3A5F]/80 bg-gradient-to-b from-[#0B2342]/80 to-[#071629]">
+        <div className="p-4 sm:p-7 text-center border-b border-[#1E3A5F]/80 bg-gradient-to-b from-[#0B2342]/80 to-[#071629]">
           {/* Animated Tactical Emblem */}
           <div className="relative w-16 h-16 mx-auto mb-3">
             <div className="absolute inset-0 rounded-2xl bg-[#2A9D8F]/20 animate-tactical-pulse blur-sm" />
@@ -170,7 +170,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Form Container */}
-        <div className="p-6 sm:p-7 space-y-4">
+        <div className="p-4 sm:p-7 space-y-4">
           {/* Error Banner */}
           {errorMsg && (
             <div className="p-3 rounded-xl bg-rose-950/70 border border-rose-500/60 text-rose-300 text-xs flex items-start gap-2.5 animate-in fade-in duration-300">

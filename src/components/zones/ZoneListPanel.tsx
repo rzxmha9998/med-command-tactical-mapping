@@ -10,6 +10,7 @@ import {
   Trash2,
   Layers,
   Plus,
+  X,
 } from 'lucide-react';
 import { RiskZone, ZoneType } from '../../types';
 import { ZONE_CONFIG } from '../../constants/presets';
@@ -50,19 +51,42 @@ export const ZoneListPanel: React.FC<ZoneListPanelProps> = ({
     }
   };
 
+  const handleSelectZone = (zone: RiskZone) => {
+    onSelectZone(zone);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      onToggleOpen();
+    }
+  };
+
   return (
     <>
+      {/* Mobile Backdrop Overlay */}
+      {isOpen && (
+        <div
+          onClick={onToggleOpen}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[430] md:hidden animate-in fade-in duration-200"
+        />
+      )}
+
+      {/* Responsive Panel Container: Bottom Sheet on Mobile, Sidebar on Desktop */}
       <div
-        className={`fixed top-14 bottom-0 left-0 z-[400] w-80 md:w-88 bg-[#071629]/95 backdrop-blur-md border-r border-[#1E3A5F] flex flex-col transition-transform duration-300 shadow-2xl ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-x-0 bottom-0 z-[440] max-h-[75vh] w-full rounded-t-2xl bg-[#071629]/98 backdrop-blur-lg border-t border-[#1E3A5F] flex flex-col transition-transform duration-300 ease-out shadow-2xl pb-safe md:inset-auto md:top-14 md:bottom-0 md:left-0 md:w-80 md:w-88 md:rounded-none md:border-r md:border-t-0 md:max-h-none ${
+          isOpen ? 'translate-y-0 md:translate-x-0' : 'translate-y-full md:-translate-x-full md:translate-y-0'
         }`}
       >
+        {/* Mobile Pull Handle Indicator */}
+        <div
+          onClick={onToggleOpen}
+          className="w-12 h-1.5 rounded-full bg-slate-600/70 hover:bg-slate-500 mx-auto mt-2.5 mb-1 md:hidden cursor-pointer shrink-0"
+          title="Tarik atau ketuk untuk menutup"
+        />
+
         {/* Header */}
-        <div className="p-4 border-b border-[#1E3A5F]">
+        <div className="p-3.5 sm:p-4 border-b border-[#1E3A5F] shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-[#2A9D8F]" />
-              <h2 className="font-bold text-white text-sm uppercase tracking-wider">
+              <h2 className="font-bold text-white text-xs sm:text-sm uppercase tracking-wider">
                 Zona Risiko
               </h2>
               <span className="px-2 py-0.5 rounded-full bg-[#1E3A5F] text-[#2A9D8F] font-mono text-xs font-bold">
@@ -70,15 +94,27 @@ export const ZoneListPanel: React.FC<ZoneListPanelProps> = ({
               </span>
             </div>
 
-            {isAdmin && (
+            <div className="flex items-center gap-1.5">
+              {isAdmin && (
+                <button
+                  onClick={onAddNewZone}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Gambar Zona</span>
+                </button>
+              )}
+
+              {/* Mobile Close Button */}
               <button
-                onClick={onAddNewZone}
-                className="px-2.5 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md"
+                type="button"
+                onClick={onToggleOpen}
+                className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                title="Tutup Panel Zona"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>+ Gambar Zona</span>
+                <X className="w-4 h-4" />
               </button>
-            )}
+            </div>
           </div>
 
           {/* Quick Zone Creation Buttons */}
@@ -174,7 +210,7 @@ export const ZoneListPanel: React.FC<ZoneListPanelProps> = ({
               return (
                 <div
                   key={zone.id}
-                  onClick={() => onSelectZone(zone)}
+                  onClick={() => handleSelectZone(zone)}
                   className="p-3 rounded-xl bg-[#0B2342] border border-[#1E3A5F] hover:border-[#2A9D8F]/60 transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -212,7 +248,9 @@ export const ZoneListPanel: React.FC<ZoneListPanelProps> = ({
                   {/* Actions */}
                   <div className="pt-2 border-t border-[#1E3A5F]/60 flex items-center justify-between text-[10px]">
                     <span className="font-mono text-slate-500">
-                      {zone.geometryType === 'circle' && zone.radius ? `R: ${zone.radius}m` : 'Geometri Poligon'}
+                      {zone.geometryType === 'circle' && zone.radius
+                        ? `Donat: ${zone.innerRadius || Math.round(zone.radius * 0.55)}-${zone.radius}m`
+                        : 'Geometri Poligon'}
                     </span>
 
                     <div className="flex items-center gap-1">
@@ -220,7 +258,7 @@ export const ZoneListPanel: React.FC<ZoneListPanelProps> = ({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectZone(zone);
+                          handleSelectZone(zone);
                         }}
                         className="px-2 py-0.5 rounded bg-[#1E3A5F] hover:bg-[#2A9D8F] hover:text-[#071629] text-slate-300 font-semibold transition-colors flex items-center gap-1"
                       >
@@ -263,6 +301,22 @@ export const ZoneListPanel: React.FC<ZoneListPanelProps> = ({
           )}
         </div>
       </div>
+
+      {/* Floating Toggle Tab Button (Desktop Only) */}
+      <button
+        onClick={onToggleOpen}
+        title={isOpen ? 'Tutup Panel Zona' : 'Buka Panel Zona'}
+        className={`hidden md:flex fixed top-32 z-[410] bg-[#071629] border border-[#1E3A5F] rounded-r-lg p-2 text-slate-300 hover:text-white shadow-xl transition-all duration-300 items-center gap-1 ${
+          isOpen ? 'left-80 md:left-88' : 'left-0'
+        }`}
+      >
+        {isOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        {!isOpen && (
+          <span className="text-[11px] font-bold text-amber-400 font-mono tracking-wider px-1">
+            ZONA ({zones.length})
+          </span>
+        )}
+      </button>
     </>
   );
 };

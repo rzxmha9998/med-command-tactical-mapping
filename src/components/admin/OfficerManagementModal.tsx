@@ -108,20 +108,23 @@ export const OfficerManagementModal: React.FC<OfficerManagementModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="w-full max-w-3xl bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden my-6">
+    <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/80 backdrop-blur-sm p-2.5 sm:p-4 overflow-y-auto">
+      <div className="w-full max-w-3xl max-h-[94vh] flex flex-col bg-[#0B2342] border border-[#1E3A5F] rounded-2xl shadow-2xl overflow-hidden my-auto">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 bg-[#071629] border-b border-[#1E3A5F] flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-[#2A9D8F]" />
             <div>
-              <h3 className="font-bold text-white text-base">Manajemen Akun & Otorisasi Petugas</h3>
-              <p className="text-[11px] text-slate-400">
+              <h3 className="font-bold text-white text-sm sm:text-base">Manajemen Akun & Otorisasi Petugas</h3>
+              <p className="text-[10px] sm:text-[11px] text-slate-400">
                 Atur status akun petugas dan hak akses pembacaan peta operasional
               </p>
             </div>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>

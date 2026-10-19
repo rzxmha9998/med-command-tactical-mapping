@@ -100,6 +100,7 @@ export function validateRiskZonePayload(data: {
   geometryType: string;
   coordinates: string;
   radius?: number;
+  innerRadius?: number;
 }): { isValid: boolean; error?: string } {
   if (!data.name || !data.name.trim()) {
     return { isValid: false, error: 'Nama zona risiko wajib diisi.' };
@@ -129,6 +130,14 @@ export function validateRiskZonePayload(data: {
       }
       if (!data.radius || typeof data.radius !== 'number' || data.radius <= 0) {
         return { isValid: false, error: 'Radius lingkaran harus lebih besar dari 0 meter.' };
+      }
+      if (typeof data.innerRadius === 'number') {
+        if (data.innerRadius <= 0) {
+          return { isValid: false, error: 'Radius dalam (lubang tengah) harus lebih besar dari 0 meter.' };
+        }
+        if (data.innerRadius >= data.radius) {
+          return { isValid: false, error: 'Radius dalam (lubang tengah) harus lebih kecil daripada radius luar.' };
+        }
       }
     } else if (data.geometryType === 'polygon') {
       if (!Array.isArray(parsed) || parsed.length < 3) {

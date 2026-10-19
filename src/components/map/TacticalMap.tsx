@@ -23,6 +23,7 @@ import { LocationSearch } from './LocationSearch';
 import { MapLegend } from './MapLegend';
 import { ZoneDrawingToolbar } from './ZoneDrawingToolbar';
 import { MapPin, ShieldAlert } from 'lucide-react';
+import { createDonutPolygonRings } from '../../utils/geoDonut';
 
 interface TacticalMapProps {
   currentMap: ITacticalMap;
@@ -271,12 +272,13 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
         if (zone.geometryType === 'circle') {
           const center = JSON.parse(zone.coordinates) as LatLngPoint;
           const radius = zone.radius || 300;
-          layer = L.circle([center.lat, center.lng], {
-            radius,
+          const innerRadius = zone.innerRadius;
+          const rings = createDonutPolygonRings(center, radius, innerRadius);
+          layer = L.polygon(rings, {
             color: cfg.borderColor,
             weight: 3,
             fillColor: cfg.fillColor,
-            fillOpacity: 0.32,
+            fillOpacity: 0.35,
           });
         } else if (zone.geometryType === 'rectangle' || zone.geometryType === 'polygon') {
           const points = JSON.parse(zone.coordinates) as LatLngPoint[];
@@ -668,15 +670,15 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
     } else if (activeGeometry === 'circle' && drawingPoints.length > 0) {
       const center = drawingPoints[0];
       const radius = 250;
-      const circle = L.circle(center, {
-        radius,
+      const rings = createDonutPolygonRings({ lat: center.lat, lng: center.lng }, radius, Math.round(radius * 0.55));
+      const donut = L.polygon(rings, {
         color: cfg.borderColor,
         weight: 3.5,
         dashArray: '6, 6',
         fillColor: cfg.fillColor,
         fillOpacity: 0.35,
       });
-      drawingTempLayerRef.current?.addLayer(circle);
+      drawingTempLayerRef.current?.addLayer(donut);
     } else if (activeGeometry === 'rectangle') {
       drawingPoints.forEach((pt, idx) => {
         const marker = L.circleMarker(pt, {
