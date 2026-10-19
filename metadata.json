@@ -1,0 +1,10 @@
+{
+  "name": "MED-COMMAND | Tactical Medical Mapping",
+  "description": "Tactical medical mapping system for plotting ambulances, medical motorbikes, response units, and risk zones with Admin and Officer role-based control.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

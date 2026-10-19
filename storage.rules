@@ -1,0 +1,39 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email.matches('(?i)riskiramad3@gmail\\.com')) ||
+        (request.auth.token.email != null && request.auth.token.email.matches('(?i)admin.*@.*')) ||
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Vehicle images: authenticated users can view, admin or assigned users can upload/delete
+    match /vehicles/{imageId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|svg\\+xml)');
+      allow delete: if isAdmin();
+    }
+
+    // Header logos: authenticated users can view, verified admin can upload/delete
+    match /header_logos/{logoId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|svg\\+xml)');
+      allow delete: if isAdmin();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

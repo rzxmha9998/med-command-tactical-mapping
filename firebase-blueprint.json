@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "AdminDoc": {
+      "title": "Admin Document",
+      "description": "Marker document in admins collection verifying admin authorization",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User profile with role and map access control",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["admin", "officer"] },
+        "isActive": { "type": "boolean" },
+        "allowedMapIds": { "type": "array" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["uid", "email", "role", "isActive"]
+    },
+    "MedicalMap": {
+      "title": "Tactical Medical Map",
+      "description": "Operational map for coordinating emergency medical services",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 512 },
+        "centerLat": { "type": "number" },
+        "centerLng": { "type": "number" },
+        "defaultZoom": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "archived"] },
+        "allowedOfficerIds": { "type": "array" },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["name", "centerLat", "centerLng", "defaultZoom", "status"]
+    },
+    "MedicalUnit": {
+      "title": "Medical Unit",
+      "description": "Ambulance, medical motorbike, or response unit plotted on a map",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "mapId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "unitCode": { "type": "string", "maxLength": 32 },
+        "type": { "type": "string", "enum": ["ambulance", "medical_bike", "response_bike", "other"] },
+        "status": { "type": "string", "enum": ["standby", "on_duty", "inactive"] },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" },
+        "crewNames": { "type": "string", "maxLength": 256 },
+        "hospitalReferral": { "type": "string", "maxLength": 256 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "imageUrl": { "type": "string", "maxLength": 2048 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["mapId", "name", "unitCode", "type", "status", "lat", "lng"]
+    },
+    "RiskZone": {
+      "title": "Tactical Risk Zone",
+      "description": "Risk zone (Red/Yellow/Green) drawn on the map with geometric coordinates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "mapId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "zoneType": { "type": "string", "enum": ["red", "yellow", "green"] },
+        "geometryType": { "type": "string", "enum": ["polygon", "circle", "rectangle"] },
+        "coordinates": { "type": "string", "maxLength": 50000 },
+        "radius": { "type": "number" },
+        "riskLevel": { "type": "string", "maxLength": 64 },
+        "description": { "type": "string", "maxLength": 512 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["mapId", "name", "zoneType", "geometryType", "coordinates"]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": "AdminDoc",
+      "description": "Marker documents indicating admin authority"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles containing roles and accessible map identifiers"
+    },
+    "/maps/{mapId}": {
+      "schema": "MedicalMap",
+      "description": "Operational tactical medical maps"
+    },
+    "/maps/{mapId}/units/{unitId}": {
+      "schema": "MedicalUnit",
+      "description": "Medical units plotted on a specific map"
+    },
+    "/maps/{mapId}/riskZones/{zoneId}": {
+      "schema": "RiskZone",
+      "description": "Risk zones drawn within a tactical medical map"
+    }
+  }
+}

@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Custom Tactical Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #071629;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1b3860;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2A9D8F;
+}
+
+/* Leaflet Dark Tactical Overrides */
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  background-color: #071629 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* 
+ * Overrides Tailwind CSS Preflight (img { max-width: 100% })
+ * Leaflet tiles require unconstrained max dimensions
+ */
+.leaflet-container .leaflet-tile,
+.leaflet-container .leaflet-pane img,
+.leaflet-container .leaflet-tile-container img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Tactical Crosshair Cursor (Active during Plotting or Drawing modes) */
+.tactical-crosshair-active,
+.tactical-crosshair-active .leaflet-container,
+.tactical-crosshair-active .leaflet-grab,
+.tactical-crosshair-active .leaflet-pane,
+.tactical-crosshair-active .leaflet-tile-pane {
+  cursor: crosshair !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #0B2342 !important;
+  color: #F3F5F7 !important;
+  border: 1px solid #1E3A5F !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+.leaflet-popup-tip {
+  background: #0B2342 !important;
+  border: 1px solid #1E3A5F !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid #1E3A5F !important;
+  border-radius: 6px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #0B2342 !important;
+  color: #F3F5F7 !important;
+  border-bottom: 1px solid #1E3A5F !important;
+  transition: all 0.2s ease;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #14365f !important;
+  color: #2A9D8F !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(7, 22, 41, 0.85) !important;
+  color: #94A3B8 !important;
+  font-size: 10px !important;
+}
+
+.leaflet-control-attribution a {
+  color: #2A9D8F !important;
+}
+
+/* Radar pulse animation for units */
+@keyframes radar-pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(42, 157, 143, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(42, 157, 143, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(42, 157, 143, 0);
+  }
+}
+
+.radar-ping {
+  animation: radar-pulse 2s infinite;
+}
+
+/* High-tech Tactical Radar Sweep Animation */
+@keyframes tactical-radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: tactical-radar-sweep 5s linear infinite;
+}
+
+/* Vertical HUD Laser Scanner Sweep */
+@keyframes hud-scanline {
+  0% {
+    top: 0%;
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.1;
+  }
+}
+
+.animate-hud-scan {
+  animation: hud-scanline 4s ease-in-out infinite alternate;
+}
+
+/* Tactical Wave Pulse */
+@keyframes tactical-pulse-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+}
+
+.animate-tactical-pulse {
+  animation: tactical-pulse-ring 3s ease-in-out infinite;
+}
+
+/* Tactical Dark Map Filter for OpenStreetMap (No API Key Required) */
+.tactical-night-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(90%) contrast(90%) !important;
+}
