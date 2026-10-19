@@ -50,6 +50,8 @@ interface TacticalMapProps {
   ) => void;
   onCancelDrawing?: () => void;
   isAdmin?: boolean;
+  isUnitPanelOpen?: boolean;
+  isZonePanelOpen?: boolean;
 }
 
 const TILE_LAYERS: Record<BaseMapLayer, { url: string; attribution: string; subdomains?: string[]; className?: string }> = {
@@ -91,12 +93,28 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
   onSaveDrawnZone,
   onCancelDrawing,
   isAdmin = false,
+  isUnitPanelOpen = false,
+  isZonePanelOpen = false,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const activeBaseLayerRef = useRef<BaseMapLayer | null>(null);
   const lastMapIdRef = useRef<string | null>(null);
+
+  // Invalidate map size after drawer transitions complete
+  useEffect(() => {
+    const t1 = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 50);
+    const t2 = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 320);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isUnitPanelOpen, isZonePanelOpen]);
 
   // Layers for markers and vectors
   const unitsLayerGroupRef = useRef<L.LayerGroup | null>(null);
@@ -807,48 +825,63 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
     <div className={`relative w-full h-full overflow-hidden bg-[#071629] ${
       isPlottingMode || isDrawingMode ? 'tactical-crosshair-active' : ''
     }`}>
-      {/* Top Left: Search & Quick Plot Action */}
-      <div className="absolute top-4 left-4 z-[500] flex flex-col sm:flex-row items-start gap-2">
+      {/* Top Left: Floating Location Search */}
+      <div
+        className={`absolute top-3 sm:top-4 z-[500] transition-all duration-300 ${
+          isUnitPanelOpen
+            ? 'left-3 sm:left-4 md:left-[384px]'
+            : isZonePanelOpen
+            ? 'left-3 sm:left-4 md:left-[368px]'
+            : 'left-3 sm:left-4'
+        }`}
+      >
         <LocationSearch
           onSelectLocation={(lat, lng, zoom = 16) => {
             mapInstanceRef.current?.flyTo([lat, lng], zoom);
           }}
         />
+      </div>
 
-        {/* Quick Plot Unit Button directly on map (Admin Only) */}
-        {isAdmin && (
+      {/* Admin Action Toolbar (Plot Unit & Gambar Zona) - Separated from search */}
+      {isAdmin && (
+        <div
+          className={`absolute top-15 sm:top-16 z-[480] flex items-center gap-2 transition-all duration-300 ${
+            isUnitPanelOpen
+              ? 'left-3 sm:left-4 md:left-[384px]'
+              : isZonePanelOpen
+              ? 'left-3 sm:left-4 md:left-[368px]'
+              : 'left-3 sm:left-4'
+          }`}
+        >
           <button
             type="button"
             onClick={onTogglePlottingMode}
-            className={`px-3 py-2 rounded-xl border flex items-center gap-1.5 text-xs font-bold shadow-xl transition-all ${
+            className={`min-h-[40px] px-3 py-2 rounded-xl border flex items-center gap-1.5 text-xs font-bold shadow-xl transition-all cursor-pointer ${
               isPlottingMode
                 ? 'bg-[#2A9D8F] text-[#071629] border-[#2A9D8F] ring-2 ring-[#2A9D8F]/50 animate-pulse'
                 : 'bg-[#071629]/95 text-white border-[#1E3A5F] hover:border-[#2A9D8F] hover:bg-[#14365f]'
             }`}
             title="Klik untuk memilih titik unit medis langsung pada peta"
           >
-            <MapPin className="w-3.5 h-3.5 text-rose-400" />
-            <span>{isPlottingMode ? 'Klik Peta untuk Plot' : '+ Plot Unit di Peta'}</span>
+            <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+            <span>{isPlottingMode ? 'Klik Peta untuk Plot' : '+ Plot Unit'}</span>
           </button>
-        )}
 
-        {/* Quick Draw Zone Button for Admin */}
-        {isAdmin && (
           <button
             type="button"
             onClick={onToggleDrawingMode}
-            className={`px-3 py-2 rounded-xl border flex items-center gap-1.5 text-xs font-bold shadow-xl transition-all ${
+            className={`min-h-[40px] px-3 py-2 rounded-xl border flex items-center gap-1.5 text-xs font-bold shadow-xl transition-all cursor-pointer ${
               isDrawingMode
                 ? 'bg-[#E53935] text-white border-[#E53935] ring-2 ring-red-500/50'
                 : 'bg-[#071629]/95 text-white border-[#1E3A5F] hover:border-amber-400 hover:bg-[#14365f]'
             }`}
             title="Klik untuk menggambar zona risiko merah, kuning, atau hijau"
           >
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+            <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
             <span>{isDrawingMode ? 'Mode Gambar Aktif' : '+ Gambar Zona'}</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Top Center: Drawing Toolbar (Admin Mode) */}
       {isDrawingMode && (

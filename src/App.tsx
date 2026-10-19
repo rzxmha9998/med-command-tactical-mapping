@@ -72,8 +72,10 @@ function MainApp() {
   // Officers state (for admin)
   const [officers, setOfficers] = useState<UserProfile[]>([]);
 
-  // Panels visibility
-  const [isUnitPanelOpen, setIsUnitPanelOpen] = useState(true);
+  // Panels visibility (hidden by default on mobile < 768px)
+  const [isUnitPanelOpen, setIsUnitPanelOpen] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 768 : false
+  );
   const [isZonePanelOpen, setIsZonePanelOpen] = useState(false);
 
   // Modals state
@@ -116,6 +118,68 @@ function MainApp() {
   useEffect(() => {
     if (!user) return;
     setMapsLoading(true);
+
+    // Demo preview mode fallback for verification
+    if (user.uid === 'demo-admin-medcommand') {
+      const demoMap: TacticalMap = {
+        id: 'demo-map-1',
+        name: 'Sektor Operasi Jakarta Pusat',
+        description: 'Pusat Komando Medis & Tanggap Darurat Bencana',
+        centerLat: -6.175392,
+        centerLng: 106.827153,
+        defaultZoom: 15,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setMaps([demoMap]);
+      setCurrentMap(demoMap);
+      setUnits([
+        {
+          id: 'unit-1',
+          mapId: 'demo-map-1',
+          unitCode: 'AGD-01',
+          name: 'Ambulans Gawat Darurat Alpha',
+          type: 'ambulance',
+          status: 'on_duty',
+          lat: -6.1742,
+          lng: 106.8285,
+          heading: 45,
+          crewNames: 'dr. Satria, Ns. Maya',
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'unit-2',
+          mapId: 'demo-map-1',
+          unitCode: 'RJC-02',
+          name: 'Motor Reaksi Cepat Bravo',
+          type: 'medical_bike',
+          status: 'standby',
+          lat: -6.1770,
+          lng: 106.8250,
+          heading: 180,
+          crewNames: 'Ns. Hendra',
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
+      setRiskZones([
+        {
+          id: 'zone-1',
+          mapId: 'demo-map-1',
+          name: 'Zona Merah Evakuasi Darurat',
+          zoneType: 'red',
+          geometryType: 'circle',
+          coordinates: '-6.175392, 106.827153',
+          radius: 350,
+          innerRadius: 100,
+          riskLevel: 'Bahaya Tinggi',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
+      setMapsLoading(false);
+      return;
+    }
 
     const unsubscribe = subscribeMaps(
       role,
@@ -505,121 +569,48 @@ function MainApp() {
                     setIsDrawingMode(!isDrawingMode);
                   }}
                   onSaveDrawnZone={handleSaveDrawnZone}
-                  onCancelDrawing={() => setIsDrawingMode(false)}
-                  isAdmin={isAdmin}
-                />
+                    onCancelDrawing={() => setIsDrawingMode(false)}
+                    isAdmin={isAdmin}
+                    isUnitPanelOpen={isUnitPanelOpen}
+                    isZonePanelOpen={isZonePanelOpen}
+                  />
 
-                {/* Real-time Officer GPS Tracking Bar (Active when Officer is viewing a map) */}
-                {role === 'officer' && currentMap && (
-                  <OfficerGPSBar mapId={currentMap.id} mapName={currentMap.name} />
-                )}
+                  {/* Real-time Officer GPS Tracking Bar (Active when Officer is viewing a map) */}
+                  {role === 'officer' && currentMap && (
+                    <OfficerGPSBar mapId={currentMap.id} mapName={currentMap.name} />
+                  )}
 
-                {/* Plotting Floating Save Banner (when admin is dragging draft marker) */}
-                {isAdmin && isPlottingMode && draftCoords && (
-                  <div className="absolute bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-[550] bg-[#071629]/98 backdrop-blur-md border border-[#2A9D8F] rounded-2xl shadow-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-center gap-2.5 sm:gap-4 w-[calc(100vw-32px)] sm:w-auto animate-in slide-in-from-bottom duration-300">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                      <div className="w-9 h-9 rounded-xl bg-[#2A9D8F]/20 text-[#2A9D8F] flex items-center justify-center font-bold shrink-0">
-                        <MapPin className="w-5 h-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-bold text-white">Posisi Marker Dipilih:</div>
-                        <div className="font-mono text-[11px] text-[#2A9D8F] truncate">
-                          {draftCoords.lat.toFixed(6)}, {draftCoords.lng.toFixed(6)}
+                  {/* Plotting Floating Save Banner (when admin is dragging draft marker) */}
+                  {isAdmin && isPlottingMode && draftCoords && (
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[550] bg-[#071629]/98 backdrop-blur-md border border-[#2A9D8F] rounded-2xl shadow-2xl p-3 sm:p-4 flex flex-col sm:flex-row items-center gap-2.5 sm:gap-4 w-[calc(100vw-32px)] sm:w-auto animate-in slide-in-from-bottom duration-300">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="w-9 h-9 rounded-xl bg-[#2A9D8F]/20 text-[#2A9D8F] flex items-center justify-center font-bold shrink-0">
+                          <MapPin className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-white">Posisi Marker Dipilih:</div>
+                          <div className="font-mono text-[11px] text-[#2A9D8F] truncate">
+                            {draftCoords.lat.toFixed(6)}, {draftCoords.lng.toFixed(6)}
+                          </div>
                         </div>
                       </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          onClick={() => setIsPlottingMode(false)}
+                          className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-[#14365f] text-slate-300 hover:text-white text-xs cursor-pointer"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          onClick={handleFinishPlottingSave}
+                          className="flex-1 sm:flex-none px-4 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs shadow-lg cursor-pointer"
+                        >
+                          Gunakan Koordinat Ini
+                        </button>
+                      </div>
                     </div>
-
-                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                      <button
-                        onClick={() => setIsPlottingMode(false)}
-                        className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg bg-[#14365f] text-slate-300 hover:text-white text-xs cursor-pointer"
-                      >
-                        Batal
-                      </button>
-                      <button
-                        onClick={handleFinishPlottingSave}
-                        className="flex-1 sm:flex-none px-4 py-1.5 rounded-lg bg-[#2A9D8F] hover:bg-[#238276] text-[#071629] font-bold text-xs shadow-lg cursor-pointer"
-                      >
-                        Gunakan Koordinat Ini
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Mobile Bottom Floating Action Dock (Quick access to Units, Zones, Plot, and Draw) */}
-                <div className="fixed bottom-3 inset-x-3 sm:hidden z-[420] bg-[#071629]/95 backdrop-blur-md border border-[#1E3A5F] rounded-2xl shadow-2xl p-1.5 flex items-center justify-between gap-1 pb-safe select-none">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsZonePanelOpen(false);
-                      setIsUnitPanelOpen(!isUnitPanelOpen);
-                    }}
-                    className={`flex-1 py-2 px-1 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
-                      isUnitPanelOpen
-                        ? 'bg-[#14365f] text-[#2A9D8F] border border-[#2A9D8F]/60 shadow-md'
-                        : 'text-slate-300 hover:bg-[#0B2342]'
-                    }`}
-                  >
-                    <Radio className="w-3.5 h-3.5 text-rose-400" />
-                    <span>Unit ({units.length})</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsUnitPanelOpen(false);
-                      setIsZonePanelOpen(!isZonePanelOpen);
-                    }}
-                    className={`flex-1 py-2 px-1 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all cursor-pointer ${
-                      isZonePanelOpen
-                        ? 'bg-[#14365f] text-amber-400 border border-amber-500/60 shadow-md'
-                        : 'text-slate-300 hover:bg-[#0B2342]'
-                    }`}
-                  >
-                    <Layers className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Zona ({riskZones.length})</span>
-                  </button>
-
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsZonePanelOpen(false);
-                        setIsUnitPanelOpen(false);
-                        handleStartPlotting();
-                      }}
-                      className={`py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
-                        isPlottingMode
-                          ? 'bg-[#2A9D8F] text-[#071629] ring-2 ring-[#2A9D8F]/50 animate-pulse'
-                          : 'bg-[#2A9D8F] hover:bg-[#238276] text-[#071629]'
-                      }`}
-                      title="Plot unit medis di peta"
-                    >
-                      <MapPin className="w-3.5 h-3.5 text-rose-800" />
-                      <span>+ Plot</span>
-                    </button>
                   )}
-
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsZonePanelOpen(false);
-                        setIsUnitPanelOpen(false);
-                        handleStartDrawingZone();
-                      }}
-                      className={`py-2 px-2.5 rounded-xl flex items-center justify-center gap-1 text-xs font-bold transition-all cursor-pointer ${
-                        isDrawingMode
-                          ? 'bg-red-600 text-white ring-2 ring-red-400 animate-pulse'
-                          : 'bg-[#14365f] border border-amber-500/50 text-amber-300'
-                      }`}
-                      title="Gambar zona risiko di peta"
-                    >
-                      <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-                      <span>+ Zona</span>
-                    </button>
-                  )}
-                </div>
 
                 {/* Units List Sidebar Panel */}
                 <UnitListPanel

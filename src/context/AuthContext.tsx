@@ -121,6 +121,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let isMounted = true;
 
+    // Check if demo preview mode is active (?demo=1)
+    if (
+      typeof window !== 'undefined' &&
+      (window.location.search.includes('demo=1') ||
+        localStorage.getItem('medcommand_demo_mode') === 'true')
+    ) {
+      const demoUser: any = {
+        uid: 'demo-admin-medcommand',
+        email: BOOTSTRAP_ADMIN_EMAIL,
+        displayName: 'Komandan Medis',
+      };
+      const demoProfile: UserProfile = {
+        uid: 'demo-admin-medcommand',
+        email: BOOTSTRAP_ADMIN_EMAIL,
+        displayName: 'Komandan Medis',
+        role: 'admin',
+        isActive: true,
+        allowedMapIds: ['demo-map-1'],
+        createdAt: new Date().toISOString(),
+      };
+      setUser(demoUser);
+      setProfile(demoProfile);
+      setLoading(false);
+      setAuthStatus('authenticated');
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!isMounted) return;
 
