@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { MedicalUnit, UnitType, UnitStatus } from '../../types';
 import { UNIT_TYPES, UNIT_STATUSES } from '../../constants/presets';
+import { TacticalVehicleCardIcon } from '../common/TacticalVehicleIcon';
 
 interface UnitListPanelProps {
   units: MedicalUnit[];
@@ -134,10 +135,11 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
               className="bg-[#0B2342] border border-[#1E3A5F] rounded-md px-2 py-1 text-slate-300 focus:outline-none focus:border-[#2A9D8F] text-[11px]"
             >
               <option value="all">Semua Tipe Kendaraan</option>
-              <option value="ambulance">Ambulans AGD</option>
-              <option value="medical_bike">Motor Medis</option>
-              <option value="response_bike">Motor Respons</option>
-              <option value="other">Unit Lain</option>
+              <option value="ambulance">🚑 Ambulans AGD</option>
+              <option value="ambulance_referral">🚑 Ambulans Rujukan</option>
+              <option value="medical_bike">🏍️ Motor Medis</option>
+              <option value="response_bike">⚡ Motor Respons</option>
+              <option value="other">🏥 Pos Medis Bergerak</option>
             </select>
 
             <select
@@ -146,9 +148,10 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
               className="bg-[#0B2342] border border-[#1E3A5F] rounded-md px-2 py-1 text-slate-300 focus:outline-none focus:border-[#2A9D8F] text-[11px]"
             >
               <option value="all">Semua Status</option>
-              <option value="standby">Siaga (Standby)</option>
-              <option value="on_duty">Bertugas (On Duty)</option>
-              <option value="inactive">Tidak Aktif</option>
+              <option value="standby">🟢 Siaga (Standby)</option>
+              <option value="on_duty">🟡 Bertugas (On Duty)</option>
+              <option value="en_route">🔵 Dalam Perjalanan (En Route)</option>
+              <option value="inactive">⚪ Tidak Aktif (Inactive)</option>
             </select>
           </div>
         </div>
@@ -179,28 +182,18 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Thumbnail or Icon */}
-                    <div className="w-12 h-12 rounded-lg bg-[#071629] border border-[#1E3A5F] overflow-hidden shrink-0 flex items-center justify-center relative">
-                      {unit.imageUrl ? (
-                        <img
-                          src={unit.imageUrl}
-                          alt={unit.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        getVehicleIcon(unit.type)
-                      )}
-                      <span
-                        className={`absolute top-1 right-1 w-2 h-2 rounded-full ${getStatusDot(
-                          unit.status
-                        )}`}
-                      />
-                    </div>
+                    {/* Built-in Tactical Vehicle Icon with Animated Rotator Lightbar */}
+                    <TacticalVehicleCardIcon
+                      type={unit.type}
+                      status={unit.status}
+                      size="sm"
+                      heading={unit.heading}
+                    />
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className="font-mono text-[10px] font-bold text-[#2A9D8F]">
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#071629] text-[#2A9D8F] border border-[#1E3A5F]">
                           {unit.unitCode}
                         </span>
                         <span className="text-[9px] font-mono text-slate-400">
@@ -213,6 +206,14 @@ export const UnitListPanel: React.FC<UnitListPanelProps> = ({
                       {unit.hospitalReferral && (
                         <div className="text-[10px] text-slate-400 truncate">
                           RS: {unit.hospitalReferral}
+                        </div>
+                      )}
+                      {unit.heading !== undefined && unit.heading !== null && (
+                        <div className="text-[9px] font-mono text-cyan-400 mt-0.5 flex items-center gap-1">
+                          <span>Arah: {Math.round(unit.heading)}°</span>
+                          {unit.speed !== undefined && unit.speed !== null && (
+                            <span className="text-slate-400">| {unit.speed.toFixed(1)} km/h</span>
+                          )}
                         </div>
                       )}
                     </div>

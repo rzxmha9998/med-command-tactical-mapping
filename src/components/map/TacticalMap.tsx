@@ -337,16 +337,16 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
 
     units.forEach((unit) => {
       const isSelected = selectedUnit?.id === unit.id;
-      const icon = createTacticalMarkerIcon(unit.type, unit.status, unit.unitCode, isSelected);
+      const icon = createTacticalMarkerIcon(unit.type, unit.status, unit.unitCode, isSelected, unit.heading);
 
       const marker = L.marker([unit.lat, unit.lng], { icon });
 
       // Tactical Popup
       const statusLabels: Record<UnitStatus, string> = {
-        standby: 'Siaga',
-        on_duty: 'Bertugas',
-        en_route: 'Dalam Perjalanan',
-        inactive: 'Tidak Aktif',
+        standby: 'Siaga (Standby)',
+        on_duty: 'Bertugas (On Duty)',
+        en_route: 'Dalam Perjalanan (En Route)',
+        inactive: 'Tidak Aktif (Inactive)',
       };
       const statusColors: Record<UnitStatus, string> = {
         standby: '#10B981',
@@ -356,7 +356,7 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
       };
 
       const popupHtml = `
-        <div class="p-3 w-64 text-xs font-sans">
+        <div class="p-3 w-68 text-xs font-sans">
           ${
             unit.imageUrl
               ? `
@@ -384,6 +384,12 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
           <div class="space-y-1 my-2 text-[11px] text-slate-300">
             ${unit.crewNames ? `<div><strong class="text-slate-400">Kru:</strong> ${unit.crewNames}</div>` : ''}
             ${unit.hospitalReferral ? `<div><strong class="text-slate-400">RS Rujukan:</strong> ${unit.hospitalReferral}</div>` : ''}
+            ${unit.heading !== undefined && unit.heading !== null ? `<div><strong class="text-slate-400">Heading GPS:</strong> <span class="font-mono text-cyan-300">${Math.round(unit.heading)}°</span></div>` : ''}
+            ${unit.speed !== undefined && unit.speed !== null ? `<div><strong class="text-slate-400">Kecepatan:</strong> <span class="font-mono text-white">${unit.speed.toFixed(1)} km/h</span></div>` : ''}
+          </div>
+
+          <div class="pt-1.5 pb-2 text-[9px] text-slate-400 border-t border-[#1E3A5F]/60 italic leading-tight">
+            * Lampu rotator adalah indikator visual status unit. Pergerakan aktual ditentukan koordinat GPS.
           </div>
 
           <div class="pt-2 border-t border-[#1E3A5F] flex items-center justify-between text-[10px] text-slate-400 font-mono">
@@ -423,7 +429,7 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
     officerLocations.forEach((loc) => {
       activeUids.add(loc.officerUid);
       const isStale = isLocationStale(loc.updatedAt);
-      const icon = createOfficerGPSMarkerIcon(loc.officerName, isStale);
+      const icon = createOfficerGPSMarkerIcon(loc.officerName, isStale, loc.heading);
       const latLng: [number, number] = [loc.latitude, loc.longitude];
 
       const popupHtml = `

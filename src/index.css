@@ -182,3 +182,141 @@
 .tactical-night-tiles {
   filter: invert(100%) hue-rotate(180deg) brightness(90%) contrast(90%) !important;
 }
+
+/* ==========================================================
+   TACTICAL EMERGENCY VEHICLE ROTATOR & BEACON ANIMATIONS
+   GPU-Accelerated Red-Blue Lightbar Strobe System
+   ========================================================== */
+
+/* Alternating Red Wig-Wag Strobe (Left side) */
+@keyframes rotator-strobe-red {
+  0%, 15%, 30% {
+    background-color: #EF4444;
+    box-shadow: 0 0 10px #EF4444, 0 0 18px rgba(239, 68, 68, 0.95);
+    opacity: 1;
+  }
+  8%, 22% {
+    background-color: #DC2626;
+    box-shadow: 0 0 4px #DC2626;
+    opacity: 0.4;
+  }
+  45%, 100% {
+    background-color: #7F1D1D;
+    box-shadow: none;
+    opacity: 0.2;
+  }
+}
+
+/* Alternating Blue Wig-Wag Strobe (Right side) */
+@keyframes rotator-strobe-blue {
+  0%, 45% {
+    background-color: #1E3A8A;
+    box-shadow: none;
+    opacity: 0.2;
+  }
+  50%, 65%, 80% {
+    background-color: #38BDF8;
+    box-shadow: 0 0 10px #38BDF8, 0 0 18px rgba(56, 189, 248, 0.95);
+    opacity: 1;
+  }
+  58%, 72% {
+    background-color: #0284C7;
+    box-shadow: 0 0 4px #0284C7;
+    opacity: 0.4;
+  }
+  95%, 100% {
+    background-color: #1E3A8A;
+    box-shadow: none;
+    opacity: 0.2;
+  }
+}
+
+/* Standby Beacon Pulse (Gentle synchronized ready rhythm) */
+@keyframes rotator-standby-red {
+  0%, 100% {
+    opacity: 0.25;
+    box-shadow: none;
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.7);
+  }
+}
+
+@keyframes rotator-standby-blue {
+  0%, 100% {
+    opacity: 0.9;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.7);
+  }
+  50% {
+    opacity: 0.25;
+    box-shadow: none;
+  }
+}
+
+/* Ambient Vehicle Halo Reflection */
+@keyframes rotator-halo-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+/* Status-specific rotator classes */
+.rotator-active-enroute .lamp-red {
+  animation: rotator-strobe-red 0.55s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+.rotator-active-enroute .lamp-blue {
+  animation: rotator-strobe-blue 0.55s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+.rotator-active-onduty .lamp-red {
+  animation: rotator-strobe-red 0.85s infinite ease-in-out;
+}
+.rotator-active-onduty .lamp-blue {
+  animation: rotator-strobe-blue 0.85s infinite ease-in-out;
+}
+
+.rotator-active-standby .lamp-red {
+  animation: rotator-standby-red 1.6s infinite ease-in-out;
+}
+.rotator-active-standby .lamp-blue {
+  animation: rotator-standby-blue 1.6s infinite ease-in-out;
+}
+
+.rotator-halo {
+  animation: rotator-halo-pulse 1.2s infinite ease-in-out;
+}
+
+/* Accessibility: Honor prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .rotator-active-enroute .lamp-red,
+  .rotator-active-onduty .lamp-red,
+  .rotator-active-standby .lamp-red {
+    animation: none !important;
+    opacity: 0.85 !important;
+    box-shadow: 0 0 5px #EF4444 !important;
+  }
+  .rotator-active-enroute .lamp-blue,
+  .rotator-active-onduty .lamp-blue,
+  .rotator-active-standby .lamp-blue {
+    animation: none !important;
+    opacity: 0.85 !important;
+    box-shadow: 0 0 5px #38BDF8 !important;
+  }
+  .rotator-halo {
+    animation: none !important;
+    opacity: 0.4 !important;
+  }
+  .radar-ping,
+  .animate-radar-sweep,
+  .animate-hud-scan,
+  .animate-tactical-pulse {
+    animation: none !important;
+  }
+}
+

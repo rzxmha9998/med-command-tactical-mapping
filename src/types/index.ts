@@ -15,7 +15,13 @@ export interface UserProfile {
   updatedAt?: string;
 }
 
-export type UnitType = 'ambulance' | 'medical_bike' | 'response_bike' | 'other';
+export type UnitType =
+  | 'ambulance'
+  | 'ambulance_referral'
+  | 'medical_bike'
+  | 'response_bike'
+  | 'mobile_clinic'
+  | 'other';
 export type UnitStatus = 'standby' | 'on_duty' | 'en_route' | 'inactive';
 
 export interface MedicalUnit {
@@ -28,6 +34,8 @@ export interface MedicalUnit {
   status: UnitStatus;
   lat: number;
   lng: number;
+  heading?: number; // Compass heading in degrees (0 - 360) for tactical vehicle rotation
+  speed?: number; // Speed in m/s or km/h
   zoneId?: string;
   zoneName?: string;
   crewNames?: string;

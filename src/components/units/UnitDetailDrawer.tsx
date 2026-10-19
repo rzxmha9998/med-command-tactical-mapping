@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { MedicalUnit, UnitType, UnitStatus } from '../../types';
 import { UNIT_TYPES, UNIT_STATUSES } from '../../constants/presets';
+import { TacticalVehicleCardIcon } from '../common/TacticalVehicleIcon';
 
 interface UnitDetailDrawerProps {
   unit: MedicalUnit | null;
@@ -57,19 +58,35 @@ export const UnitDetailDrawer: React.FC<UnitDetailDrawerProps> = ({
             {statusConfig.label}
           </span>
         </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors cursor-pointer">
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Hero Image or Tactical Banner */}
-      <div className="relative w-full h-48 bg-[#071629] border-b border-[#1E3A5F] overflow-hidden">
+      {/* Hero Image or Built-in Tactical Vehicle Icon Banner */}
+      <div className="relative w-full h-48 bg-[#071629] border-b border-[#1E3A5F] overflow-hidden flex items-center justify-center">
         {unit.imageUrl ? (
-          <img src={unit.imageUrl} alt={unit.name} className="w-full h-full object-cover" />
+          <>
+            <img src={unit.imageUrl} alt={unit.name} className="w-full h-full object-cover" />
+            <div className="absolute top-3 right-3">
+              <TacticalVehicleCardIcon
+                type={unit.type}
+                status={unit.status}
+                size="sm"
+                heading={unit.heading}
+              />
+            </div>
+          </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-6 bg-gradient-to-br from-[#0B2342] to-[#071629]">
-            <Ambulance className="w-16 h-16 text-[#2A9D8F] opacity-70 mb-2" />
-            <span className="text-xs font-semibold text-slate-400">{typeConfig.label}</span>
+            <TacticalVehicleCardIcon
+              type={unit.type}
+              status={unit.status}
+              size="lg"
+              heading={unit.heading}
+              className="mb-2 scale-125"
+            />
+            <span className="text-xs font-semibold text-slate-300 mt-2">{typeConfig.label}</span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#071629] via-transparent to-transparent pointer-events-none" />
@@ -105,8 +122,29 @@ export const UnitDetailDrawer: React.FC<UnitDetailDrawerProps> = ({
               )}
             </button>
           </div>
-          <div className="font-mono text-sm font-bold text-white">
+          <div className="font-mono text-sm font-bold text-white mb-1.5">
             {unit.lat.toFixed(6)}, {unit.lng.toFixed(6)}
+          </div>
+
+          {(unit.heading !== undefined && unit.heading !== null) || (unit.speed !== undefined && unit.speed !== null) ? (
+            <div className="pt-2 mt-1 border-t border-[#1E3A5F] flex items-center justify-between text-[11px] font-mono">
+              {unit.heading !== undefined && unit.heading !== null && (
+                <div className="flex items-center gap-1 text-cyan-300">
+                  <span className="text-slate-400">Heading:</span>
+                  <span className="font-bold">{Math.round(unit.heading)}°</span>
+                </div>
+              )}
+              {unit.speed !== undefined && unit.speed !== null && (
+                <div className="flex items-center gap-1 text-slate-300">
+                  <span className="text-slate-400">Kecepatan:</span>
+                  <span className="font-bold text-white">{unit.speed.toFixed(1)} km/h</span>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          <div className="pt-2 mt-1 border-t border-[#1E3A5F]/60 text-[10px] text-slate-400 italic leading-snug">
+            * Lampu rotator merah-biru menunjukkan status operasional unit. Pergerakan aktual ditentukan koordinat GPS.
           </div>
         </div>
 

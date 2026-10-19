@@ -1,100 +1,32 @@
 import L from 'leaflet';
 import { UnitType, UnitStatus } from '../../types';
+import { getTacticalMarkerInnerHtml } from '../common/TacticalVehicleIcon';
 
-// Returns tactical SVG and styling for Leaflet DivIcon
+/**
+ * Returns tactical Leaflet DivIcon with built-in vehicle SVG,
+ * realistic red-blue emergency rotator lightbar, status dot, and GPS heading rotation.
+ */
 export function createTacticalMarkerIcon(
   type: UnitType,
   status: UnitStatus,
   unitCode: string,
-  isSelected: boolean = false
+  isSelected: boolean = false,
+  heading?: number
 ): L.DivIcon {
-  // Status indicator colors
-  const statusColors = {
-    standby: '#10B981', // green
-    on_duty: '#F59E0B', // amber
-    en_route: '#0284C7', // sky blue
-    inactive: '#64748B', // gray
-  };
-  const dotColor = (statusColors as Record<string, string>)[status] || '#10B981';
-
-  // Type-specific colors and SVG icons
-  let bgGradient = 'from-red-600 to-red-800';
-  let borderColor = '#EF4444';
-  let iconSvg = '';
-
-  if (type === 'ambulance') {
-    bgGradient = 'from-rose-600 to-red-800';
-    borderColor = '#F87171';
-    iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M10 10H6"/>
-        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
-        <path d="M19 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.578-.502l-1.539-3.076A1 1 0 0 0 16.382 7H14"/>
-        <circle cx="17" cy="18" r="2"/>
-        <circle cx="7" cy="18" r="2"/>
-      </svg>
-    `;
-  } else if (type === 'medical_bike') {
-    bgGradient = 'from-cyan-600 to-blue-800';
-    borderColor = '#38BDF8';
-    iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="18.5" cy="17.5" r="3.5"/>
-        <circle cx="5.5" cy="17.5" r="3.5"/>
-        <circle cx="15" cy="5" r="1"/>
-        <path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
-      </svg>
-    `;
-  } else if (type === 'response_bike') {
-    bgGradient = 'from-amber-600 to-orange-800';
-    borderColor = '#FBBF24';
-    iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-      </svg>
-    `;
-  } else {
-    bgGradient = 'from-teal-600 to-emerald-800';
-    borderColor = '#34D399';
-    iconSvg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 2a2 2 0 0 0-2 2v5H4a2 2 0 0 0-2 2v2c0 1.1.9 2 2 2h5v5c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2v-5h5a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-5V4a2 2 0 0 0-2-2h-2z"/>
-      </svg>
-    `;
-  }
-
-  const selectedRing = isSelected
-    ? 'ring-4 ring-[#2A9D8F] shadow-[0_0_20px_rgba(42,157,143,0.8)] scale-110'
-    : 'shadow-[0_4px_14px_rgba(0,0,0,0.6)]';
-
-  const pulseEffect = (status === 'standby' || status === 'on_duty' || status === 'en_route')
-    ? `<span style="background-color: ${dotColor};" class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#071629] animate-ping opacity-75"></span>`
-    : '';
-
-  const html = `
-    <div class="relative flex flex-col items-center group cursor-pointer transition-all duration-200">
-      <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br ${bgGradient} border-2 flex items-center justify-center ${selectedRing}" style="border-color: ${borderColor};">
-        ${iconSvg}
-        ${pulseEffect}
-        <span style="background-color: ${dotColor};" class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#071629]"></span>
-      </div>
-      <!-- Unit Code Tactical Pill -->
-      <div class="mt-1 px-1.5 py-0.5 rounded bg-[#071629]/95 border border-[#1E3A5F] text-[10px] font-mono font-bold text-white tracking-wider uppercase whitespace-nowrap shadow-md">
-        ${unitCode}
-      </div>
-    </div>
-  `;
+  const html = getTacticalMarkerInnerHtml(type, status, unitCode, heading, isSelected);
 
   return L.divIcon({
     className: 'tactical-unit-marker',
     html,
-    iconSize: [44, 56],
-    iconAnchor: [22, 54],
-    popupAnchor: [0, -50],
+    iconSize: [46, 58],
+    iconAnchor: [23, 56],
+    popupAnchor: [0, -52],
   });
 }
 
-// Temporary marker when admin is plotting a new unit
+/**
+ * Temporary marker when admin is plotting a new unit
+ */
 export function createDraftPlottingIcon(): L.DivIcon {
   const html = `
     <div class="relative flex flex-col items-center cursor-move">
@@ -120,11 +52,13 @@ export function createDraftPlottingIcon(): L.DivIcon {
 
 /**
  * Creates a tactical marker icon for live Petugas (Officer) GPS tracking.
- * Distinct visually from vehicles with person badge and pulsing cyan radar beacon.
+ * Distinct visually from vehicles with person badge, pulsing cyan radar beacon,
+ * and optional directional orientation arrow if GPS heading is provided.
  */
 export function createOfficerGPSMarkerIcon(
   officerName: string,
-  isStale: boolean = false
+  isStale: boolean = false,
+  heading?: number | null
 ): L.DivIcon {
   const shortName = officerName.length > 14 ? officerName.substring(0, 12) + '...' : officerName;
 
@@ -138,8 +72,22 @@ export function createOfficerGPSMarkerIcon(
     ? ''
     : `<span style="background-color: ${dotColor};" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#071629] animate-ping opacity-80"></span>`;
 
+  // Optional directional pointer if heading is known
+  const hasHeading = heading !== undefined && heading !== null && !isNaN(heading);
+  const headingArrow =
+    hasHeading && !isStale
+      ? `
+        <div class="absolute -top-3 w-3 h-3 flex items-center justify-center transition-transform duration-300" style="transform: rotate(${heading}deg); transform-origin: center 20px;">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1L10.5 11L6 8.5L1.5 11L6 1Z" fill="#38BDF8" stroke="#071629" stroke-width="1.2"/>
+          </svg>
+        </div>
+      `
+      : '';
+
   const html = `
     <div class="relative flex flex-col items-center group cursor-pointer transition-transform duration-300">
+      ${headingArrow}
       <div class="relative w-10 h-10 rounded-full bg-gradient-to-br ${bgGradient} border-2 flex items-center justify-center shadow-lg">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
@@ -149,7 +97,9 @@ export function createOfficerGPSMarkerIcon(
         <span style="background-color: ${dotColor};" class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#071629]"></span>
       </div>
       <!-- Tactical Officer Label Pill -->
-      <div class="mt-1 px-1.5 py-0.5 rounded bg-[#071629]/95 border ${isStale ? 'border-slate-700 text-slate-400' : 'border-cyan-500/80 text-cyan-300'} text-[10px] font-mono font-bold tracking-wider uppercase whitespace-nowrap shadow-md">
+      <div class="mt-1 px-1.5 py-0.5 rounded bg-[#071629]/95 border ${
+        isStale ? 'border-slate-700 text-slate-400' : 'border-cyan-500/80 text-cyan-300'
+      } text-[10px] font-mono font-bold tracking-wider uppercase whitespace-nowrap shadow-md">
         ${shortName}
       </div>
     </div>

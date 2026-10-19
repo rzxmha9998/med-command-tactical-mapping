@@ -16,6 +16,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { MedicalUnit, UnitType, UnitStatus, LatLngPoint, RiskZone } from '../../types';
+import { TacticalVehicleCardIcon } from '../common/TacticalVehicleIcon';
 import {
   uploadVehicleImage,
   validateVehicleImageFile,
@@ -59,6 +60,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
   const [crewNames, setCrewNames] = useState('');
   const [hospitalReferral, setHospitalReferral] = useState('');
   const [notes, setNotes] = useState('');
+  const [heading, setHeading] = useState<string>('');
 
   // Image & upload state
   const [previewUrl, setPreviewUrl] = useState('');
@@ -116,6 +118,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
       setCrewNames(initialData.crewNames || '');
       setHospitalReferral(initialData.hospitalReferral || '');
       setNotes(initialData.notes || '');
+      setHeading(initialData.heading !== undefined && initialData.heading !== null ? initialData.heading.toString() : '');
       setPreviewUrl(initialData.imageUrl || '');
       setImageFile(null); // CRITICAL: Reset new image file when loading existing unit
       setIsImageExplicitlyRemoved(false);
@@ -129,6 +132,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
       if (draftFormData.crewNames !== undefined) setCrewNames(draftFormData.crewNames);
       if (draftFormData.hospitalReferral !== undefined) setHospitalReferral(draftFormData.hospitalReferral);
       if (draftFormData.notes !== undefined) setNotes(draftFormData.notes);
+      if (draftFormData.heading !== undefined && draftFormData.heading !== null) setHeading(draftFormData.heading.toString());
       if (draftFormData.imageUrl !== undefined) {
         setPreviewUrl(draftFormData.imageUrl);
       }
@@ -319,6 +323,10 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
       if (crewNames.trim()) unitPayload.crewNames = crewNames.trim();
       if (hospitalReferral.trim()) unitPayload.hospitalReferral = hospitalReferral.trim();
       if (notes.trim()) unitPayload.notes = notes.trim();
+      const parsedHeading = heading.trim() ? parseFloat(heading) : undefined;
+      if (parsedHeading !== undefined && !isNaN(parsedHeading)) {
+        unitPayload.heading = ((parsedHeading % 360) + 360) % 360;
+      }
       if (finalImageUrl) unitPayload.imageUrl = finalImageUrl;
 
       // ==========================================
@@ -467,7 +475,7 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-slate-300 font-semibold">Jenis Kendaraan</label>
+              <label className="text-slate-300 font-semibold">Jenis Kendaraan Medis</label>
               <select
                 disabled={isFormDisabled}
                 value={type}
@@ -475,15 +483,39 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
                 className="w-full bg-[#071629] border border-[#1E3A5F] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#2A9D8F] disabled:opacity-50"
               >
                 <option value="ambulance">🚑 Ambulans Gawat Darurat (AGD)</option>
+                <option value="ambulance_referral">🚑 Ambulans Rujukan</option>
                 <option value="medical_bike">🏍️ Motor Medis Reaksi Cepat</option>
-                <option value="response_bike">⚡ Motor Respons Triase Lapangan</option>
-                <option value="other">🏥 Pos Medis Bergerak / Unit Lain</option>
+                <option value="response_bike">⚡ Motor Respons Triase</option>
+                <option value="other">🏥 Pos Medis Bergerak</option>
               </select>
             </div>
           </div>
 
-          {/* Status & Assigned Zone */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Built-in Tactical SVG Vehicle & Rotator Live Preview */}
+          <div className="p-3 rounded-xl bg-[#071629] border border-[#1E3A5F] flex items-center justify-between gap-3 shadow-inner">
+            <div className="flex items-center gap-3">
+              <TacticalVehicleCardIcon
+                type={type}
+                status={status}
+                size="md"
+                heading={heading ? parseFloat(heading) : undefined}
+              />
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-white text-xs">Ikon Kendaraan & Rotator Taktis</span>
+                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-bold uppercase">
+                    SVG Bawaan
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Unit otomatis tampil di peta dan panel dengan ikon taktis & lampu rotator merah-biru aktif. Tidak memerlukan upload foto.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Status, Direction/Heading & Assigned Zone */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
               <label className="text-slate-300 font-semibold">Status Operasional</label>
               <select
@@ -500,7 +532,24 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
             </div>
 
             <div className="space-y-1">
-              <label className="text-slate-300 font-semibold">Zona Tugas Operasional</label>
+              <label className="text-slate-300 font-semibold flex items-center justify-between">
+                <span>Arah / Heading GPS</span>
+                <span className="text-[10px] text-slate-400 font-mono">0°-360°</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="360"
+                disabled={isFormDisabled}
+                value={heading}
+                onChange={(e) => setHeading(e.target.value)}
+                placeholder="cth: 90 (Timur)"
+                className="w-full bg-[#071629] border border-[#1E3A5F] rounded-lg px-3 py-2 text-white font-mono focus:outline-none focus:border-[#2A9D8F] disabled:opacity-50"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-slate-300 font-semibold">Zona Tugas</label>
               <select
                 disabled={isFormDisabled}
                 value={zoneId}
@@ -607,10 +656,12 @@ export const UnitFormModal: React.FC<UnitFormModalProps> = ({
             </div>
           </div>
 
-          {/* Vehicle Image Upload */}
+          {/* Vehicle Image Upload (Optional) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-slate-300 font-semibold">Foto Kendaraan Medis (Firebase Storage)</label>
+              <label className="text-slate-300 font-semibold">
+                Foto Tambahan Kendaraan <span className="text-slate-400 font-normal text-[11px]">(Opsional — Unit otomatis memiliki ikon SVG & rotator di atas)</span>
+              </label>
               {previewUrl && (
                 <span className="text-[11px] text-slate-400">
                   {imageFile ? `File baru: ${(imageFile.size / 1024).toFixed(0)} KB` : 'Foto tersimpan aktif'}

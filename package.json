@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx src/firebase/utils/sanitize.test.ts && tsx src/firebase/services/unitSave.test.ts && tsx src/firebase/services/accessRequest.test.ts && tsx src/firebase/services/officerGps.test.ts"
+    "test": "tsx src/runAllTests.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
