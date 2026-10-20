@@ -24,6 +24,7 @@ import { MapLegend } from './MapLegend';
 import { ZoneDrawingToolbar } from './ZoneDrawingToolbar';
 import { MapPin, ShieldAlert } from 'lucide-react';
 import { createDonutPolygonRings } from '../../utils/geoDonut';
+import { getZoneCenterCoordinates } from '../../firebase/services/referralHospitalService';
 
 interface TacticalMapProps {
   currentMap: ITacticalMap;
@@ -75,6 +76,37 @@ const TILE_LAYERS: Record<BaseMapLayer, { url: string; attribution: string; subd
   },
 };
 
+function computeRadiusPixels(map: L.Map, center: LatLngPoint, radiusMeters: number): number {
+  try {
+    const p1 = map.latLngToLayerPoint([center.lat, center.lng]);
+    const latRadians = (center.lat * Math.PI) / 180;
+    const metersPerDegreeLng = 111320 * Math.max(0.01, Math.cos(latRadians));
+    const p2 = map.latLngToLayerPoint([center.lat, center.lng + radiusMeters / metersPerDegreeLng]);
+    return Math.max(20, Math.round(Math.abs(p2.x - p1.x)));
+  } catch {
+    return 40;
+  }
+}
+
+function createRadarWaveIcon(zoneType: ZoneType, radiusPx: number) {
+  const diameterPx = radiusPx * 2;
+  return L.divIcon({
+    className: 'radar-wave-marker-icon',
+    html: `
+      <div class="tactical-radar-waves-container tactical-radar-${zoneType}" style="width: ${diameterPx}px; height: ${diameterPx}px;">
+        <div class="radar-wave-ring wave-1"></div>
+        <div class="radar-wave-ring wave-2"></div>
+        <div class="radar-wave-ring wave-3"></div>
+        <div class="radar-sweep-beam"></div>
+        <div class="radar-center-crosshair"></div>
+        <div class="radar-center-beacon"></div>
+      </div>
+    `,
+    iconSize: [diameterPx, diameterPx],
+    iconAnchor: [radiusPx, radiusPx],
+  });
+}
+
 export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
   currentMap,
   units,
@@ -121,6 +153,10 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
   const officersLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const officerMarkersMapRef = useRef<Map<string, L.Marker>>(new Map());
   const zonesLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const radarWavesLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const radarWaveMarkersRef = useRef<
+    Array<{ marker: L.Marker; center: LatLngPoint; radiusMeters: number; zoneType: ZoneType }>
+  >([]);
   const draftPlotMarkerRef = useRef<L.Marker | null>(null);
   const userLocationMarkerRef = useRef<L.CircleMarker | null>(null);
 
@@ -174,7 +210,15 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
       tileLayerRef.current = layer;
       activeBaseLayerRef.current = currentBaseLayer;
 
-      // Create layer groups for units, officers, zones, and drawing
+      // Create dedicated radar wave pane with pointer-events: none (below overlayPane at 400)
+      if (!map.getPane('radarWavePane')) {
+        const rPane = map.createPane('radarWavePane');
+        rPane.style.zIndex = '350';
+        rPane.style.pointerEvents = 'none';
+      }
+
+      // Create layer groups for units, officers, zones, radar waves, and drawing
+      radarWavesLayerGroupRef.current = L.layerGroup().addTo(map);
       zonesLayerGroupRef.current = L.layerGroup().addTo(map);
       unitsLayerGroupRef.current = L.layerGroup().addTo(map);
       officersLayerGroupRef.current = L.layerGroup().addTo(map);
@@ -195,6 +239,8 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
         mapInstanceRef.current = null;
         tileLayerRef.current = null;
         activeBaseLayerRef.current = null;
+        radarWavesLayerGroupRef.current = null;
+        radarWaveMarkersRef.current = [];
         zonesLayerGroupRef.current = null;
         unitsLayerGroupRef.current = null;
         officersLayerGroupRef.current = null;
@@ -277,36 +323,77 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
     }
   }, [isDrawingMode, isPlottingMode]);
 
-  // 4. Render Risk Zones (Red, Yellow, Green)
+  // Dynamic Zoom Listener: Update radar wave overlay pixel sizes dynamically
   useEffect(() => {
-    if (!zonesLayerGroupRef.current || !mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    const handleZoomUpdate = () => {
+      radarWaveMarkersRef.current.forEach((item) => {
+        const radiusPx = computeRadiusPixels(map, item.center, item.radiusMeters);
+        item.marker.setIcon(createRadarWaveIcon(item.zoneType, radiusPx));
+      });
+    };
+
+    map.on('zoom', handleZoomUpdate);
+    map.on('zoomend', handleZoomUpdate);
+
+    return () => {
+      map.off('zoom', handleZoomUpdate);
+      map.off('zoomend', handleZoomUpdate);
+    };
+  }, []);
+
+  // 4. Render Risk Zones (Red, Yellow, Green) with Living Radar Animation
+  useEffect(() => {
+    if (!zonesLayerGroupRef.current || !radarWavesLayerGroupRef.current || !mapInstanceRef.current) return;
     zonesLayerGroupRef.current.clearLayers();
+    radarWavesLayerGroupRef.current.clearLayers();
+    radarWaveMarkersRef.current = [];
+
+    const map = mapInstanceRef.current;
 
     riskZones.forEach((zone) => {
       const cfg = ZONE_CONFIG[zone.zoneType] || ZONE_CONFIG.red;
       let layer: L.Polygon | L.Circle | L.Rectangle | null = null;
+      const center = getZoneCenterCoordinates(zone);
+      let radiusMeters = zone.radius || 300;
 
       try {
         if (zone.geometryType === 'circle') {
-          const center = JSON.parse(zone.coordinates) as LatLngPoint;
+          const parsedCenter = JSON.parse(zone.coordinates) as LatLngPoint;
           const radius = zone.radius || 300;
+          radiusMeters = radius;
           const innerRadius = zone.innerRadius;
-          const rings = createDonutPolygonRings(center, radius, innerRadius);
+          const rings = createDonutPolygonRings(parsedCenter, radius, innerRadius);
           layer = L.polygon(rings, {
-            color: cfg.borderColor,
-            weight: 3,
-            fillColor: cfg.fillColor,
-            fillOpacity: 0.35,
-          });
-        } else if (zone.geometryType === 'rectangle' || zone.geometryType === 'polygon') {
-          const points = JSON.parse(zone.coordinates) as LatLngPoint[];
-          const latLngs = points.map((p) => [p.lat, p.lng] as [number, number]);
-          layer = L.polygon(latLngs, {
+            className: `tactical-zone-path tactical-zone-${zone.zoneType}`,
             color: cfg.borderColor,
             weight: 3,
             fillColor: cfg.fillColor,
             fillOpacity: 0.32,
           });
+        } else if (zone.geometryType === 'rectangle' || zone.geometryType === 'polygon') {
+          const points = JSON.parse(zone.coordinates) as LatLngPoint[];
+          const latLngs = points.map((p) => [p.lat, p.lng] as [number, number]);
+          layer = L.polygon(latLngs, {
+            className: `tactical-zone-path tactical-zone-${zone.zoneType}`,
+            color: cfg.borderColor,
+            weight: 3,
+            fillColor: cfg.fillColor,
+            fillOpacity: 0.30,
+          });
+
+          // Calculate approximate radius for polygon centroid
+          if (Array.isArray(points) && points.length > 0) {
+            const maxDist = points.reduce((max, p) => {
+              const dLat = (p.lat - center.lat) * 111320;
+              const dLng = (p.lng - center.lng) * 111320 * Math.cos((center.lat * Math.PI) / 180);
+              const dist = Math.sqrt(dLat * dLat + dLng * dLng);
+              return Math.max(max, dist);
+            }, 0);
+            radiusMeters = Math.max(80, Math.round(maxDist));
+          }
         }
 
         if (layer) {
@@ -319,7 +406,7 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
             }
           );
 
-          // Popup on click
+          // Tactical Popup on click
           const popupHtml = `
             <div class="p-3 max-w-xs text-xs font-sans">
               <div class="flex items-center gap-1.5 font-bold uppercase tracking-wider mb-1" style="color: ${cfg.fillColor};">
@@ -333,10 +420,20 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
                   ? `<p class="text-slate-300 text-[11px] mb-2 p-1.5 bg-[#071629] rounded border border-[#1E3A5F]">${zone.description}</p>`
                   : ''
               }
-              ${zone.notes ? `<div class="text-[10px] text-slate-400 italic">Catatan: ${zone.notes}</div>` : ''}
+              ${zone.notes ? `<div class="text-[10px] text-slate-400 italic mb-2">Catatan: ${zone.notes}</div>` : ''}
+              <button id="btn-inspect-zone-${zone.id}" class="w-full mt-1.5 py-1.5 px-2 rounded bg-[#2A9D8F] text-[#071629] font-bold text-xs flex items-center justify-center gap-1 hover:bg-[#238276] transition-colors cursor-pointer">
+                <span>Rincian &amp; RS Rujukan</span>
+              </button>
             </div>
           `;
           layer.bindPopup(popupHtml);
+
+          layer.on('popupopen', () => {
+            const btn = document.getElementById(`btn-inspect-zone-${zone.id}`);
+            if (btn) {
+              btn.onclick = () => onSelectZone?.(zone);
+            }
+          });
 
           layer.on('click', () => {
             onSelectZone?.(zone);
@@ -344,6 +441,22 @@ export const TacticalMapComponent: React.FC<TacticalMapProps> = ({
 
           zonesLayerGroupRef.current?.addLayer(layer);
         }
+
+        // Add living radar waves overlay centered at zone centroid (pointer-events: none, geographic coordinates)
+        const radiusPx = computeRadiusPixels(map, center, radiusMeters);
+        const waveMarker = L.marker([center.lat, center.lng], {
+          icon: createRadarWaveIcon(zone.zoneType, radiusPx),
+          pane: 'radarWavePane',
+          interactive: false,
+        });
+
+        radarWavesLayerGroupRef.current?.addLayer(waveMarker);
+        radarWaveMarkersRef.current.push({
+          marker: waveMarker,
+          center,
+          radiusMeters,
+          zoneType: zone.zoneType,
+        });
       } catch (e) {
         console.warn('Failed to parse zone coordinates for zone:', zone.id, e);
       }

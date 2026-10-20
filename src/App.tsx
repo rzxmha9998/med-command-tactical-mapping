@@ -8,6 +8,8 @@ import { UnitDetailDrawer } from './components/units/UnitDetailDrawer';
 import { UnitFormModal } from './components/units/UnitFormModal';
 import { ZoneListPanel } from './components/zones/ZoneListPanel';
 import { ZoneFormModal } from './components/zones/ZoneFormModal';
+import { ZoneAlertDrawer } from './components/zones/ZoneAlertDrawer';
+import { searchNearestReferralHospitals } from './firebase/services/referralHospitalService';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { MapFormModal } from './components/admin/MapFormModal';
 import { OfficerManagementModal } from './components/admin/OfficerManagementModal';
@@ -477,11 +479,27 @@ function MainApp() {
     data: Omit<RiskZone, 'id' | 'mapId' | 'createdAt' | 'updatedAt'>
   ) => {
     if (!currentMap) throw new Error('Peta operasional belum dipilih.');
+    let savedId: string;
     if (editingZone) {
       await updateRiskZone(currentMap.id, editingZone.id, data);
+      savedId = editingZone.id;
     } else {
-      await createRiskZone(currentMap.id, data);
+      savedId = await createRiskZone(currentMap.id, data);
     }
+
+    const savedZone: RiskZone = {
+      ...data,
+      id: savedId,
+      mapId: currentMap.id,
+      createdAt: editingZone?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Pre-cache nearest referral hospitals in background
+    searchNearestReferralHospitals(currentMap.id, savedZone, 10).catch(() => {});
+
+    // Automatically select the zone to open the Zone Alert Drawer
+    setSelectedZone(savedZone);
     setEditingZone(null);
     setPendingZoneGeom(null);
   };
@@ -670,6 +688,19 @@ function MainApp() {
                     setIsUnitModalOpen(true);
                   } : undefined}
                   onDelete={isAdmin ? handleDeleteUnit : undefined}
+                  isAdmin={isAdmin}
+                />
+
+                {/* Selected Zone Alert Drawer (Living Radar & Nearest Referral Hospitals) */}
+                <ZoneAlertDrawer
+                  zone={selectedZone}
+                  mapId={currentMap.id}
+                  onClose={() => setSelectedZone(null)}
+                  onEditZone={isAdmin ? (z) => {
+                    setEditingZone(z);
+                    setIsZoneModalOpen(true);
+                  } : undefined}
+                  onDeleteZone={isAdmin ? handleDeleteZone : undefined}
                   isAdmin={isAdmin}
                 />
               </div>
